@@ -1,0 +1,70 @@
+OK so let's talk about syntax.
+
+=== Literals:
+
+Id: [_A-Za-z] [_0-9A-Za-z-]*
+
+Bools: true | false
+
+Ints: (+|-) [0-9]+
+Ints: '0x' [0-A]+
+
+Floats: int '.' [0-9]+
+Floats: float 'e' int
+
+Char literals: ''' <?> '''
+String literals: '"' char* '"'
+Multiline string literal: '"""' char* '"""'
+
+comma sep list: expr (',' expr)*
+List literals: '[' comma_sep_list? ']'
+Tuple literals: '(' comma_set_list? ')'
+
+map pair: Id '=>' expr
+Map literals: '{' (map_pair (',' map_pair)*)? '}'
+
+=== Expressions:
+
+EId: id
+EInt: Ints
+EFloat: Floats
+EChar: Char
+EString: String | Multiline string
+EList: List
+ETuple: Tuple
+EMap: Map
+
+EOp2: expr op expr
+EOp1: op expr
+
+ELambda: '(\' (id type)+ '->' (expr | Assign* Return) ')'
+
+EApp: id+
+
+EIf: 'if' expr 'then' expr 'else' expr
+ECase: 'case' expr 'of' (pattern '->' expr)+
+
+Expr : '(' expr ')'
+
+=== Statements:
+
+Seq: statement+
+Assign: id '=' expr ';'
+Function: id (id)+ '=' (expr | Assign* Return)
+Return: 'return' expr ';'
+
+=== Patterns:
+
+PInt: Ints
+PFloat: Floats
+PChar: Char
+PString: String | Multiline string
+
+PList: List
+PSplit: pattern ':' pattern
+PTuple: Tuple
+// No maps!
+
+PId: id
+PAt: id '@' pattern
+PNop: '_'
