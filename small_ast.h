@@ -6,6 +6,58 @@
 #include <list>
 #include <vector>
 
+// TODO: Simplify this:
+// - Doesn't involve cast to access Op name
+// - Ensures Op2 and Op2Strings are always in sync (macro?)
+// - Same with Op1
+enum class Op2 {
+    // Arithmetic
+    Add
+    ,Sub
+    ,Mul
+    ,Div
+    ,Mod
+
+    // Boolean
+    ,LAnd
+    ,LOr
+
+    // Comparative
+    ,Lt
+    ,Lte
+    ,Gt
+    ,Gte
+    ,Eq
+};
+
+static const std::string Op2Strings[] = {
+    "+"
+    ,"-"
+    ,"*"
+    ,"/"
+    ,"%"
+    ,"&&"
+    ,"||"
+    ,"<"
+    ,"<="
+    ,">"
+    ,">="
+    ,"=="
+};
+
+enum class Op1 {
+    // Arithmetic
+    Neg
+
+    // Boolean
+    ,LNot
+};
+
+static const std::string Op1Strings[] = {
+    "-"
+    ,"!"
+};
+
 class Expr {
 public:
     virtual ~Expr() {}
@@ -246,6 +298,63 @@ public:
         }
         str << ")";
         return str.str();
+    }
+};
+
+class EOp2 : public Expr {
+    Expr *left, *right;
+    Op2 op;
+public:
+    EOp2 (Op2 o, Expr *l, Expr *r) {
+        op = o;
+        left = l->clone();
+        right = r->clone();
+    }
+
+    EOp2 (const EOp2 &other) {
+        op = other.op;
+        left = other.left->clone();
+        right = other.right->clone();
+    }
+
+    virtual ~EOp2() {
+        delete left;
+        delete right;
+    }
+
+    virtual Expr *clone() {
+        return new EOp2(*this);
+    }
+
+    virtual std::string toString() {
+        return left->toString() + Op2Strings[(int)op] + right->toString();
+    }
+};
+
+class EOp1 : public Expr {
+    Expr *e;
+    Op1 op;
+public:
+    EOp1 (Op1 o, Expr *x) {
+        op = o;
+        e = x->clone();
+    }
+
+    EOp1 (const EOp1 &other) {
+        op = other.op;
+        e = other.e->clone();
+    }
+
+    virtual ~EOp1() {
+        delete e;
+    }
+
+    virtual Expr *clone() {
+        return new EOp1(*this);
+    }
+
+    virtual std::string toString() {
+        return Op1Strings[(int)op] + e->toString();
     }
 };
 

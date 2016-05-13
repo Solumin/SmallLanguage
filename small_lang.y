@@ -31,6 +31,8 @@ std::list<Expr *> tmp_list;
     char *strlit;
     char charlit;
     bool boollit;
+    Op2 op2;
+    Op1 op1;
     Expr *expr;
     Statement *stateval;
 }
@@ -41,6 +43,16 @@ std::list<Expr *> tmp_list;
 %token <strlit> STRING
 %token <charlit> CHAR
 %token <boollit> BOOL
+
+%right <op1> LNOT
+%precedence NEG
+%left <op2> MUL DIV MOD
+%left <op2> ADD SUB
+
+%left <op2> LT LTE GT GTE
+%left <op2> EQ
+
+%left <op2> LAND LOR
 
 %token ENDL
 %token RETURN
@@ -75,6 +87,21 @@ expr:
     | BOOL   { $$ = new EBool($1); }
     | list   { $$ = $1; }
     | tuple  { $$ = $1; }
+    | expr ADD expr { $$ = new EOp2(Op2::Add, $1, $3); }
+    | expr SUB expr { $$ = new EOp2(Op2::Sub, $1, $3); }
+    | expr MUL expr { $$ = new EOp2(Op2::Mul, $1, $3); }
+    | expr DIV expr { $$ = new EOp2(Op2::Div, $1, $3); }
+    | expr MOD expr { $$ = new EOp2(Op2::Mod, $1, $3); }
+    | expr LAND expr { $$ = new EOp2(Op2::LAnd, $1, $3); }
+    | expr LOR expr { $$ = new EOp2(Op2::LOr, $1, $3); }
+    | expr LT expr { $$ = new EOp2(Op2::Lt, $1, $3); }
+    | expr LTE expr { $$ = new EOp2(Op2::Lte, $1, $3); }
+    | expr GT expr { $$ = new EOp2(Op2::Gt, $1, $3); }
+    | expr GTE expr { $$ = new EOp2(Op2::Gte, $1, $3); }
+    | expr EQ expr { $$ = new EOp2(Op2::Eq, $1, $3); }
+    | LNOT expr      { $$ = new EOp1(Op1::LNot, $2); }
+    | SUB expr %prec NEG { $$ = new EOp1(Op1::Neg, $2); }
+    /* | '(' expr ')' { $$ = $2; } */
 
 comma_sep:
     expr    { tmp_list.push_back($1); }

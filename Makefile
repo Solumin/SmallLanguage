@@ -10,7 +10,7 @@ ASTH=small_ast.h
 
 EXEF=small_parser.exe
 
-parser: $(LEXOUT) $(BALLOUT) $(ASTH)
+parser: $(EXEF) $(LEXOUT) $(BALLOUT) $(ASTH)
 	g++ -g -o $(EXEF) $(BTABC) $(LEXOUT)
 
 lexer: $(LEXOUT)

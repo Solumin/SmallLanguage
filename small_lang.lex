@@ -47,6 +47,20 @@ ws      [ \t]+
 =  { return '='; }
 return { return RETURN; }
 
+\+   { return ADD; }
+\-   { return SUB; }
+\*   { return MUL; }
+\/   { return DIV; }
+%   { return MOD; }
+&&  { return LAND; }
+"||"  { return LOR; }
+\<   { return LT; }
+\<=  { return LTE; }
+\>   { return GT; }
+\>=  { return GTE; }
+==   { return EQ; }
+\!   { return LNOT; }
+
 {int}   {
     printf("%d: integer `%s`\n", mylineno, yytext);
     if (strncmp(yytext, "0x", 2) == 0) {
