@@ -2,7 +2,9 @@
 #define SMALL_AST_H
 
 #include <string>
+#include <sstream>
 #include <list>
+#include <vector>
 
 class Expr {
 public:
@@ -166,7 +168,6 @@ public:
 
 class EList : public Expr {
     std::list<Expr*> value;
-
 public:
     EList () {}
 
@@ -191,14 +192,64 @@ public:
     }
 
     virtual std::string toString() {
-        return "[fuck you]";
+        std::stringstream str;
+        str << "[";
+        for (std::list<Expr*>::iterator it = value.begin(); it != value.end(); ++it) {
+            str << (*it)->toString();
+            if (++it != value.end())
+                str << ", ";
+            it--;
+        }
+        str << "]";
+        return str.str();
+    }
+};
+
+class ETuple : public Expr {
+    std::vector<Expr*> value;
+    int size;
+public:
+    ETuple() {}
+
+    ETuple (std::vector<Expr*> l) {
+        value = l;
+        size = l.size();
+    }
+
+    ETuple (std::list<Expr*> l) {
+        for (std::list<Expr*>::iterator it = l.begin(); it != l.end(); ++it) {
+            value.push_back(*it);
+        }
+        size = l.size();
+    }
+
+    ETuple (const ETuple &other) {
+        value = other.value;
+        size = other.size;
+    }
+
+    virtual ~ETuple() {
+        delete &value;
+    }
+
+    virtual Expr *clone() {
+        return new ETuple(*this);
+    }
+
+    virtual std::string toString() {
+        std::stringstream str;
+        str << "(";
+        for (std::vector<Expr*>::iterator it = value.begin(); it != value.end(); ++it) {
+            str << (*it)->toString();
+            if (it + 1 != value.end())
+                str << ", ";
+        }
+        str << ")";
+        return str.str();
     }
 };
 
 class Statement {
-protected:
-    const std::string semiend = ";\n";
-
 public:
     virtual ~Statement() {}
 
@@ -242,9 +293,61 @@ public:
     }
 
     virtual std::string toString() {
-        return s1->toString() + semiend + s2->toString();
+        return s1->toString() + "\n" + s2->toString();
     }
 };
+
+class Assign : public Statement {
+    std::string id;
+    Expr *e;
+public:
+    Assign (std::string name, Expr *lhs) {
+        id = name;
+        e = lhs->clone();
+    }
+
+    Assign (const Assign &other) {
+        id = other.id;
+        e = other.e->clone();
+    }
+
+    virtual ~Assign() {
+        delete e;
+    }
+
+    virtual Statement *clone() {
+        return new Assign(*this);
+    }
+
+    virtual std::string toString() {
+        return id + " = " + e->toString();
+    }
+};
+
+class Return : public Statement {
+    Expr *e;
+public:
+    Return (Expr *any) {
+        e = any->clone();
+    }
+
+    Return (const Return &other) {
+        e = other.e->clone();
+    }
+
+    virtual ~Return() {
+        delete e;
+    }
+
+    virtual Statement *clone() {
+        return new Return(*this);
+    }
+
+    virtual std::string toString() {
+       return "RETURN " + e->toString();
+    }
+};
+
 
 class Any : public Statement {
     Expr *e;

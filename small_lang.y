@@ -1,6 +1,7 @@
 %{
 #include <iostream>
 #include <cstdio>
+#include <list>
 
 extern "C" int yylex();
 extern "C" int yyparse();
@@ -16,6 +17,9 @@ void yyerror(const char *msg);
 %code {
 // The root of the AST
 Statement *ast_root;
+
+// tmp Expr list for building list literals and tuples
+std::list<Expr *> tmp_list;
 }
 
 %define parse.error verbose
@@ -38,29 +42,53 @@ Statement *ast_root;
 %token <charlit> CHAR
 %token <boollit> BOOL
 
-%type <expr> expr
-%type <stateval> program seq any
+%token ENDL
+%token RETURN
+
+%type <expr> expr list tuple
+%type <stateval> program stmt seq any
 
 %token END 0 "end of file"
 %%
 
 program:
-    seq     { $$ = $1; printf("Assigning to ast_root\n"); ast_root = $$; }
+    seq     { $$ = $1; ast_root = $$; }
 
 seq:
-   any seq  { $$ = new Seq($1, $2); }
-   | any    { $$ = new Seq($1); }
+   stmt ENDLS seq  { $$ = new Seq($1, $3); }
+   | stmt ENDLS    { $$ = $1; }
+
+stmt:
+    ID '=' expr   { $$ = new Assign($1, $3); }
+    | RETURN expr { $$ = new Return($2); }
+    | any   { $$ = $1; }
 
 any:
    expr     { $$ = new Any($1); }
 
 expr:
     INT     { $$ = new EInt($1); }
-   | FLOAT  { $$ = new EFloat($1); }
-   | ID     { $$ = new EId($1); }
-   | STRING { $$ = new EString($1); }
-   | CHAR   { $$ = new EChar($1); }
-   | BOOL   { $$ = new EBool($1); }
+    | FLOAT  { $$ = new EFloat($1); }
+    | ID     { $$ = new EId($1); }
+    | STRING { $$ = new EString($1); }
+    | CHAR   { $$ = new EChar($1); }
+    | BOOL   { $$ = new EBool($1); }
+    | list   { $$ = $1; }
+    | tuple  { $$ = $1; }
+
+comma_sep:
+    expr    { tmp_list.push_back($1); }
+    | comma_sep ',' expr { tmp_list.push_back($3); }
+
+list:
+    '[' comma_sep ']' { $$ = new EList(tmp_list); tmp_list.clear(); }
+
+tuple:
+     '(' comma_sep ')' { $$ = new ETuple(tmp_list); tmp_list.clear(); }
+
+ENDLS:
+     ENDLS ENDL
+    | ENDL
 
 %%
 

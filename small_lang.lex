@@ -39,9 +39,13 @@ ws      [ \t]+
 
 %%
 
-{ws}
-
-\n      mylineno++;
+\[ { return '['; }
+\] { return ']'; }
+\( { return '('; }
+\) { return ')'; }
+,  { return ','; }
+=  { return '='; }
+return { return RETURN; }
 
 {int}   {
     printf("%d: integer `%s`\n", mylineno, yytext);
@@ -92,6 +96,10 @@ ws      [ \t]+
     }
     return CHAR;
 }
+
+\n  { mylineno++; return ENDL; }
+;   { return ENDL; }
+{ws}
 
 .       printf("%d: ERROR `%s`\n", mylineno, yytext);
 
