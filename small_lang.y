@@ -6,6 +6,7 @@
 extern "C" int yylex();
 extern "C" int yyparse();
 extern "C" FILE *yyin;
+extern "C" int mylineno;
 
 void yyerror(const char *msg);
 %}
@@ -57,13 +58,14 @@ std::list<char*> tmp_args;
 %left <op2> LAND LOR
 
 %token LAMBDA_OPEN "(\\"
-%token LAMBDA_ARROW "=>"
+%token LAMBDA_ARROW "->"
+%token FUNC "func"
 
 %token ENDL
 %token RETURN
 
 %type <expr> expr list tuple lambda
-%type <stateval> program stmt seq any lambda_body
+%type <stateval> program stmt seq any func_body
 
 %token END 0 "end of file"
 %%
@@ -77,6 +79,8 @@ seq:
 
 stmt:
     ID '=' expr   { $$ = new Assign($1, $3); }
+    | ID id_list '=' '(' func_body ')'
+        { $$ = new Function($1, tmp_args, $5); tmp_args.clear(); }
     | RETURN expr { $$ = new Return($2); }
     | any   { $$ = $1; }
 
@@ -119,21 +123,21 @@ list:
 tuple:
      '(' comma_sep ')' { $$ = new ETuple(tmp_list); tmp_list.clear(); }
 
-args_list:
-         ID             { tmp_args.push_back($1); }
-         | args_list ID { tmp_args.push_back($2); }
+id_list:
+         ID           { tmp_args.push_back($1); }
+         | id_list ID { tmp_args.push_back($2); }
 
-lambda_body:
-           expr { $$ = new Return($1); }
-           | program { $$ = $1; }
+func_body:
+           expr      { $$ = new Return($1); }
+           | seq { $$ = $1; }
 
 lambda:
-      LAMBDA_OPEN args_list LAMBDA_ARROW lambda_body ')'
+      LAMBDA_OPEN id_list LAMBDA_ARROW func_body ')'
        { $$ = new ELambda(tmp_args, $4); tmp_args.clear(); }
 
 ENDLS:
-     ENDLS ENDL
-    | ENDL
+     ENDL
+     | ENDLS ENDL
 
 %%
 
@@ -158,5 +162,5 @@ int main( int argc, char** argv) {
 
 
 void yyerror(const char *msg) {
-    std::cout << "Parse error: " << msg << '\n';
+    std::cout << "Parse error on line " << mylineno << ": " << msg << '\n';
 }

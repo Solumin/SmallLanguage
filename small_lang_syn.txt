@@ -1,3 +1,9 @@
+TODO:
+- Values
+- Evaluate
+- Semicolons unnecessary (a la Go), newlines no longer syntactically significant
+    - Alt.: Indentation matters, as in Haskell and Python
+
 OK so let's talk about syntax.
 
 === Literals:

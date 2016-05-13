@@ -10,17 +10,23 @@ ASTH=small_ast.h
 
 EXEF=small_parser.exe
 
-parser: $(EXEF) $(LEXOUT) $(BALLOUT) $(ASTH)
-	g++ -g -o $(EXEF) $(BTABC) $(LEXOUT)
+# High-level targets for making the parser, the lexer and the bison files
+
+parser: $(EXEF)
 
 lexer: $(LEXOUT)
 
 bison: $(BALLOUT)
 
-$(BALLOUT): $(BISONIN)
+# "Low-level" targets for making the executable and other files
+
+$(EXEF): $(LEXOUT) $(BALLOUT)
+	g++ -g -o $(EXEF) $(BTABC) $(LEXOUT)
+
+$(BALLOUT): $(BISONIN) $(ASTH)
 	bison -d $(BISONIN)
 
-$(LEXOUT): $(LEXIN) $(BTABH)
+$(LEXOUT): $(LEXIN) $(BTABH) $(ASTH)
 	flex $(LEXIN)
 
 clean:
