@@ -6,6 +6,28 @@
 #include <list>
 #include <vector>
 
+// TODO: Separate files
+class Expr {
+public:
+    virtual ~Expr() {}
+
+    virtual Expr *clone() = 0;
+
+    virtual std::string toString() = 0;
+
+    // Should also have the value of the expr
+    // virtual Value evaluate(env) = 0;
+};
+
+class Statement {
+public:
+    virtual ~Statement() {}
+
+    virtual Statement *clone() = 0;
+
+    virtual std::string toString() = 0;
+};
+
 // TODO: Simplify this:
 // - Doesn't involve cast to access Op name
 // - Ensures Op2 and Op2Strings are always in sync (macro?)
@@ -58,17 +80,6 @@ static const std::string Op1Strings[] = {
     ,"!"
 };
 
-class Expr {
-public:
-    virtual ~Expr() {}
-
-    virtual Expr *clone() = 0;
-
-    virtual std::string toString() = 0;
-
-    // Should also have the value of the expr
-    // virtual Value evaluate(env) = 0;
-};
 
 class EId : public Expr {
     std::string id;
@@ -358,14 +369,42 @@ public:
     }
 };
 
-class Statement {
+class ELambda : public Expr {
+    std::vector<std::string> args;
+    Statement *body;
 public:
-    virtual ~Statement() {}
+    ELambda (std::list<char*> ids, Statement *b) {
+        for (std::list<char*>::iterator it = ids.begin(); it != ids.end(); ++it) {
+            args.push_back(std::string(*it));
+        }
+        body = b->clone();
+    }
 
-    virtual Statement *clone() = 0;
+    ELambda (const ELambda &other) {
+        args = other.args;
+        body = other.body->clone();
+    }
 
-    virtual std::string toString() = 0;
+    virtual ~ELambda() {
+        delete &args;
+        delete body;
+    }
+
+    virtual Expr *clone() {
+        return new ELambda(*this);
+    }
+
+    virtual std::string toString() {
+        std::stringstream str;
+        str << "(\\ ";
+        for (std::vector<std::string>::iterator it = args.begin(); it != args.end(); ++it) {
+            str << *it << " ";
+        }
+        str << "-> " << body->toString() << ")";
+        return str.str();
+    }
 };
+
 
 class Skip : public Statement {
 public:

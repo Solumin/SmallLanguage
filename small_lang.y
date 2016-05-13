@@ -19,7 +19,9 @@ void yyerror(const char *msg);
 Statement *ast_root;
 
 // tmp Expr list for building list literals and tuples
+// TODO: Got to be a safer way to do this. Consider nested lists!
 std::list<Expr *> tmp_list;
+std::list<char*> tmp_args;
 }
 
 %define parse.error verbose
@@ -54,11 +56,14 @@ std::list<Expr *> tmp_list;
 
 %left <op2> LAND LOR
 
+%token LAMBDA_OPEN "(\\"
+%token LAMBDA_ARROW "=>"
+
 %token ENDL
 %token RETURN
 
-%type <expr> expr list tuple
-%type <stateval> program stmt seq any
+%type <expr> expr list tuple lambda
+%type <stateval> program stmt seq any lambda_body
 
 %token END 0 "end of file"
 %%
@@ -87,6 +92,7 @@ expr:
     | BOOL   { $$ = new EBool($1); }
     | list   { $$ = $1; }
     | tuple  { $$ = $1; }
+    | lambda { $$ = $1; }
     | expr ADD expr { $$ = new EOp2(Op2::Add, $1, $3); }
     | expr SUB expr { $$ = new EOp2(Op2::Sub, $1, $3); }
     | expr MUL expr { $$ = new EOp2(Op2::Mul, $1, $3); }
@@ -112,6 +118,18 @@ list:
 
 tuple:
      '(' comma_sep ')' { $$ = new ETuple(tmp_list); tmp_list.clear(); }
+
+args_list:
+         ID             { tmp_args.push_back($1); }
+         | args_list ID { tmp_args.push_back($2); }
+
+lambda_body:
+           expr { $$ = new Return($1); }
+           | program { $$ = $1; }
+
+lambda:
+      LAMBDA_OPEN args_list LAMBDA_ARROW lambda_body ')'
+       { $$ = new ELambda(tmp_args, $4); tmp_args.clear(); }
 
 ENDLS:
      ENDLS ENDL

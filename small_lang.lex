@@ -45,6 +45,8 @@ ws      [ \t]+
 \) { return ')'; }
 ,  { return ','; }
 =  { return '='; }
+"(\\" { return LAMBDA_OPEN; }
+"->" { return LAMBDA_ARROW; }
 return { return RETURN; }
 
 \+   { return ADD; }
