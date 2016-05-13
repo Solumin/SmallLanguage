@@ -4,6 +4,7 @@
 a b c = ( c )
 a b c = (return c;)
 
+// Personally, I greatly prefer this syntax over "a b c"..
 g = (\ h ->
     i = j + 1;
     return k;)

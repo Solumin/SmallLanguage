@@ -113,6 +113,7 @@ return { return RETURN; }
 ;   { return ENDL; }
 
 {ws}
+"//".*$
 
 .       printf("%d: ERROR `%s`\n", mylineno, yytext);
 

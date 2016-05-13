@@ -60,6 +60,7 @@ std::list<char*> tmp_args;
 %token LAMBDA_OPEN "(\\"
 %token LAMBDA_ARROW "->"
 %token FUNC "func"
+%token LINE_COMMENT "//"
 
 %token ENDL
 %token RETURN
@@ -71,7 +72,8 @@ std::list<char*> tmp_args;
 %%
 
 program:
-    seq     { $$ = $1; ast_root = $$; }
+    ENDLS seq   { $$ = $2; ast_root = $$; }
+    | seq       { $$ = $1; ast_root = $$;}
 
 seq:
    stmt ENDLS seq  { $$ = new Seq($1, $3); }
