@@ -10,6 +10,8 @@ ASTH=small_ast.h
 
 EXEF=small_parser.exe
 
+.PHONY: parser lexer bison clean clean-all
+
 # High-level targets for making the parser, the lexer and the bison files
 
 parser: $(EXEF)

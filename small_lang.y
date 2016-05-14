@@ -1,6 +1,5 @@
 %{
 #include <iostream>
-#include <cstdio>
 #include <vector>
 
 extern "C" int yylex();
@@ -140,7 +139,13 @@ tuple_body:
           | tuple_body ',' expr[e] { tmp_expr_list.push_back($e); }
 
 tuple:
-     '(' tuple_body ')' { $$ = new ETuple(tmp_expr_list); tmp_expr_list.clear(); }
+     '(' expr[e1]
+        { tmp_expr_list.push_back($e1); }
+     ',' expr[e2]
+        { tmp_expr_list.push_back($e2); }
+     tuple_body ')'
+        { $$ = new ETuple(tmp_expr_list); tmp_expr_list.clear(); }
+    | '(' ')' { $$ = new ETuple(); }
 
 id_list:
        ID           { tmp_str_list.push_back($1); }
@@ -175,22 +180,24 @@ ENDLS:
 int main( int argc, char** argv) {
     yyin = fopen(argv[1], "r");
     if (!yyin) {
-        printf("Failed to open %s\n", argv[1]);
+        std::cout << "Failed to open " << argv[1] << std::endl;
         return 1;
     }
+
     while (!feof(yyin)) {
 		yyparse();
     };
-    printf("\nParse successful, time to print!\n");
+    std::cout << "Parsing completed." << std::endl;
+    fclose(yyin);
+
     if (ast_root == NULL) {
-        printf("Aye wtf\n");
+        std::cout << "Parsing failed." << std::endl;
+        return 2;
     } else {
         std::cout << "The program:\n" << ast_root->toString() << std::endl;;
     }
-    fclose(yyin);
     return 0;
 }
-
 
 void yyerror(const char *msg) {
     std::cout << "Parse error on line " << mylineno << ": " << msg << '\n';

@@ -273,7 +273,7 @@ class ETuple : public Expr {
     std::vector<Expr*> value;
     int size;
 public:
-    ETuple() {}
+    ETuple() { size = 0; }
 
     ETuple (std::vector<Expr*> l) {
         value = std::vector<Expr*>(l);
