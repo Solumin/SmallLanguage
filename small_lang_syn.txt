@@ -33,6 +33,7 @@ Map literals: '{' (map_pair (',' map_pair)*)? '}'
 
 EId: id
 EInt: Ints
+EBool: true/false
 EFloat: Floats
 EChar: Char
 EString: String | Multiline string
@@ -77,4 +78,13 @@ PNop: '_'
 
 === Values:
 
-???
+VInt: Int
+VFloat: Float
+VBool: Bool
+VChar: Char
+VString: String
+VList: List
+VTuple: Tuple
+VClos: Environment + Lambda
+
+VMap: Map

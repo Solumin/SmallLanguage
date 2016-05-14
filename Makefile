@@ -6,6 +6,9 @@ BTABH=small_lang.tab.h
 BTABC=small_lang.tab.c
 BALLOUT=$(BTABH) $(BTABC)
 
+HEADERS=*.hpp
+CPPFILES=*.cpp
+
 ASTH=small_ast.h
 
 EXEF=small_parser.exe
@@ -23,7 +26,7 @@ bison: $(BALLOUT)
 # "Low-level" targets for making the executable and other files
 
 $(EXEF): $(LEXOUT) $(BALLOUT)
-	g++ -g -o $(EXEF) $(BTABC) $(LEXOUT)
+	g++ -g -o $(EXEF) $(BTABC) $(LEXOUT) $(CPPFILES)
 
 $(BALLOUT): $(BISONIN) $(ASTH)
 	bison -d $(BISONIN)
