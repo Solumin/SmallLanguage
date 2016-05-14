@@ -21,8 +21,8 @@ Statement *ast_root;
 
 // tmp Expr list for building list literals and tuples
 // TODO: Got to be a safer way to do this. Consider nested lists!
-std::list<Expr *> tmp_list;
-std::list<char*> tmp_args;
+std::list<Expr *> tmp_expr_list;
+std::list<char*> tmp_str_list;
 }
 
 %define parse.error verbose
@@ -47,6 +47,7 @@ std::list<char*> tmp_args;
 %token <charlit> CHAR
 %token <boollit> BOOL
 
+%nonassoc FUNC_CALL
 %right <op1> LNOT
 %precedence NEG
 %left <op2> MUL DIV MOD
@@ -65,7 +66,7 @@ std::list<char*> tmp_args;
 %token ENDL
 %token RETURN
 
-%type <expr> expr list tuple lambda
+%type <expr> expr list tuple lambda app
 %type <stateval> program stmt seq any func_body
 
 %token END 0 "end of file"
@@ -82,9 +83,9 @@ seq:
 stmt:
     ID '=' expr   { $$ = new Assign($1, $3); }
     | FUNC ID[name] id_list '=' '{' func_body[body] '}'
-        { $$ = new Assign($name, new ELambda(tmp_args, $body)); tmp_args.clear(); }
+        { $$ = new Assign($name, new ELambda(tmp_str_list, $body)); tmp_str_list.clear(); }
     | FUNC ID[name] '=' '{' func_body[body] '}'
-        { $$ = new Assign($name, new ELambda(tmp_args, $body)); tmp_args.clear(); }
+        { $$ = new Assign($name, new ELambda(tmp_str_list, $body)); tmp_str_list.clear(); }
     | RETURN expr { $$ = new Return($2); }
     | any   { $$ = $1; }
 
@@ -98,6 +99,7 @@ expr:
     | STRING { $$ = new EString($1); }
     | CHAR   { $$ = new EChar($1); }
     | BOOL   { $$ = new EBool($1); }
+    | '(' expr ')' { $$ = $2; }
     | list   { $$ = $1; }
     | tuple  { $$ = $1; }
     | lambda { $$ = $1; }
@@ -115,22 +117,26 @@ expr:
     | expr EQ expr { $$ = new EOp2(Op2::Eq, $1, $3); }
     | LNOT expr      { $$ = new EOp1(Op1::LNot, $2); }
     | SUB expr %prec NEG { $$ = new EOp1(Op1::Neg, $2); }
-    /* | '(' expr ')' { $$ = $2; } */
+    | app { $$ = $1; }
 
-comma_sep:
-    expr    { tmp_list.push_back($1); }
-    | comma_sep ',' expr { tmp_list.push_back($3); }
-    | %empty
+comma_sep_exprs:
+    expr    { tmp_expr_list.push_back($1); }
+    | comma_sep_exprs ',' expr { tmp_expr_list.push_back($3); }
 
 list:
-    '[' comma_sep ']' { $$ = new EList(tmp_list); tmp_list.clear(); }
+    '[' comma_sep_exprs ']' { $$ = new EList(tmp_expr_list); tmp_expr_list.clear(); }
+    | '[' ']' { $$ = new EList(tmp_expr_list); tmp_expr_list.clear(); }
+
+tuple_body:
+          %empty
+          | tuple_body ',' expr[e] { tmp_expr_list.push_back($e); }
 
 tuple:
-     '(' comma_sep ')' { $$ = new ETuple(tmp_list); tmp_list.clear(); }
+     '(' tuple_body ')' { $$ = new ETuple(tmp_expr_list); tmp_expr_list.clear(); }
 
 id_list:
-       ID           { tmp_args.push_back($1); }
-       | id_list ID { tmp_args.push_back($2); }
+       ID           { tmp_str_list.push_back($1); }
+       | id_list ID { tmp_str_list.push_back($2); }
 
 func_body:
          expr  { $$ = new Return($1); }
@@ -138,9 +144,15 @@ func_body:
 
 lambda:
       LAMBDA_OPEN id_list LAMBDA_ARROW func_body ')'
-       { $$ = new ELambda(tmp_args, $4); tmp_args.clear(); }
+       { $$ = new ELambda(tmp_str_list, $4); tmp_str_list.clear(); }
       | LAMBDA_OPEN LAMBDA_ARROW func_body ')'
-       { $$ = new ELambda(tmp_args, $3); tmp_args.clear(); }
+       { $$ = new ELambda(tmp_str_list, $3); tmp_str_list.clear(); }
+
+app:
+   expr[fun] '(' comma_sep_exprs ')'
+      { $$ = new EApp($fun, tmp_expr_list); tmp_expr_list.clear(); }
+   | expr '(' ')'
+      { $$ = new EApp($1, tmp_expr_list); }
 
 ENDLS:
      ENDL

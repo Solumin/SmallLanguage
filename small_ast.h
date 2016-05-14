@@ -374,23 +374,23 @@ public:
 };
 
 class ELambda : public Expr {
-    std::vector<std::string> args;
+    std::vector<std::string> params;
     Statement *body;
 public:
     ELambda (std::list<char*> ids, Statement *b) {
         for (std::list<char*>::iterator it = ids.begin(); it != ids.end(); ++it) {
-            args.push_back(std::string(*it));
+            params.push_back(std::string(*it));
         }
         body = b->clone();
     }
 
     ELambda (const ELambda &other) {
-        args = std::vector<std::string>(other.args);
+        params = std::vector<std::string>(other.params);
         body = other.body->clone();
     }
 
     virtual ~ELambda() {
-        delete &args;
+        delete &params;
         delete body;
     }
 
@@ -401,7 +401,7 @@ public:
     virtual std::string toString() {
         std::stringstream str;
         str << "(\\ ";
-        for (std::vector<std::string>::iterator it = args.begin(); it != args.end(); ++it) {
+        for (std::vector<std::string>::iterator it = params.begin(); it != params.end(); ++it) {
             str << *it << " ";
         }
         str << "-> " << body->toString() << ")";
@@ -409,6 +409,43 @@ public:
     }
 };
 
+class EApp : public Expr {
+    Expr *func;
+    std::vector<Expr*> args;
+public:
+    EApp (Expr *f, std::list<Expr*> as) {
+        func = f->clone();
+        for (std::list<Expr*>::iterator it = as.begin(); it != as.end(); ++it) {
+            args.push_back(*it);
+        }
+    }
+
+    EApp (const EApp &other) {
+        func = other.func->clone();
+        args = std::vector<Expr*>(other.args);
+    }
+
+    virtual ~EApp() {
+        delete func;
+        delete &args;
+    }
+
+    virtual Expr *clone() {
+        return new EApp(*this);
+    }
+
+    virtual std::string toString() {
+        std::stringstream str;
+        str << func->toString() << '(';
+        for (std::vector<Expr*>::iterator it = args.begin(); it != args.end(); ++it) {
+            str << (*it)->toString();
+            if (it + 1 != args.end())
+                str << ", ";
+        }
+        str << ')';
+        return str.str();
+    }
+};
 
 class Skip : public Statement {
 public:
@@ -502,14 +539,14 @@ public:
 
 /* class Function : public Statement { */
 /*     std::string name; */
-/*     std::vector<std::string> args; */
+/*     std::vector<std::string> params; */
 /*     Statement *body; */
 /* public: */
 /*     Function (std::string n, std::list<char*> ids, Statement *b) { */
 /*         name = n; */
 /*         body = b->clone(); */
 /*         for (std::list<char*>::iterator it = ids.begin(); it != ids.end(); ++it) { */
-/*             args.push_back(std::string(*it)); */
+/*             params.push_back(std::string(*it)); */
 /*         } */
 /*     } */
 
@@ -517,18 +554,18 @@ public:
 /*         name = std::string(n); */
 /*         body = b->clone(); */
 /*         for (std::list<char*>::iterator it = ids.begin(); it != ids.end(); ++it) { */
-/*             args.push_back(std::string(*it)); */
+/*             params.push_back(std::string(*it)); */
 /*         } */
 /*     } */
 
 /*     Function (const Function &other) { */
 /*         name = other.name; */
-/*         args = std::vector<std::string>(other.args); */
+/*         params = std::vector<std::string>(other.params); */
 /*         body = other.body->clone(); */
 /*     } */
 
 /*     virtual ~Function() { */
-/*         delete &args; */
+/*         delete &params; */
 /*         delete body; */
 /*     } */
 
@@ -539,7 +576,7 @@ public:
 /*     virtual std::string toString() { */
 /*         std::stringstream str; */
 /*         str << name << " "; */
-/*         for (std::vector<std::string>::iterator it = args.begin(); it != args.end(); ++it) { */
+/*         for (std::vector<std::string>::iterator it = params.begin(); it != params.end(); ++it) { */
 /*             str << *it << " "; */
 /*         } */
 /*         str << "= (" << body->toString() << ")"; */
