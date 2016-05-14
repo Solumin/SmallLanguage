@@ -1,3 +1,7 @@
 // This is a full line comment
 x = a + 1; // this is a line comment after a line
 // This is a full line comment
+
+// Bunch of blank lines
+
+

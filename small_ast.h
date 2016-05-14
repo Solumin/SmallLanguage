@@ -500,52 +500,52 @@ public:
     }
 };
 
-class Function : public Statement {
-    std::string name;
-    std::vector<std::string> args;
-    Statement *body;
-public:
-    Function (std::string n, std::list<char*> ids, Statement *b) {
-        name = n;
-        body = b->clone();
-        for (std::list<char*>::iterator it = ids.begin(); it != ids.end(); ++it) {
-            args.push_back(std::string(*it));
-        }
-    }
+/* class Function : public Statement { */
+/*     std::string name; */
+/*     std::vector<std::string> args; */
+/*     Statement *body; */
+/* public: */
+/*     Function (std::string n, std::list<char*> ids, Statement *b) { */
+/*         name = n; */
+/*         body = b->clone(); */
+/*         for (std::list<char*>::iterator it = ids.begin(); it != ids.end(); ++it) { */
+/*             args.push_back(std::string(*it)); */
+/*         } */
+/*     } */
 
-    Function (char* n, std::list<char*> ids, Statement *b) {
-        name = std::string(n);
-        body = b->clone();
-        for (std::list<char*>::iterator it = ids.begin(); it != ids.end(); ++it) {
-            args.push_back(std::string(*it));
-        }
-    }
+/*     Function (char* n, std::list<char*> ids, Statement *b) { */
+/*         name = std::string(n); */
+/*         body = b->clone(); */
+/*         for (std::list<char*>::iterator it = ids.begin(); it != ids.end(); ++it) { */
+/*             args.push_back(std::string(*it)); */
+/*         } */
+/*     } */
 
-    Function (const Function &other) {
-        name = other.name;
-        args = std::vector<std::string>(other.args);
-        body = other.body->clone();
-    }
+/*     Function (const Function &other) { */
+/*         name = other.name; */
+/*         args = std::vector<std::string>(other.args); */
+/*         body = other.body->clone(); */
+/*     } */
 
-    virtual ~Function() {
-        delete &args;
-        delete body;
-    }
+/*     virtual ~Function() { */
+/*         delete &args; */
+/*         delete body; */
+/*     } */
 
-    virtual Statement *clone() {
-        return new Function(*this);
-    }
+/*     virtual Statement *clone() { */
+/*         return new Function(*this); */
+/*     } */
 
-    virtual std::string toString() {
-        std::stringstream str;
-        str << name << " ";
-        for (std::vector<std::string>::iterator it = args.begin(); it != args.end(); ++it) {
-            str << *it << " ";
-        }
-        str << "= (" << body->toString() << ")";
-        return str.str();
-    }
-};
+/*     virtual std::string toString() { */
+/*         std::stringstream str; */
+/*         str << name << " "; */
+/*         for (std::vector<std::string>::iterator it = args.begin(); it != args.end(); ++it) { */
+/*             str << *it << " "; */
+/*         } */
+/*         str << "= (" << body->toString() << ")"; */
+/*         return str.str(); */
+/*     } */
+/* }; */
 
 
 

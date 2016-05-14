@@ -82,7 +82,7 @@ seq:
 stmt:
     ID '=' expr   { $$ = new Assign($1, $3); }
     | ID id_list '=' '(' func_body ')'
-        { $$ = new Function($1, tmp_args, $5); tmp_args.clear(); }
+        { $$ = new Assign($1, new ELambda(tmp_args, $5)); tmp_args.clear(); }
     | RETURN expr { $$ = new Return($2); }
     | any   { $$ = $1; }
 
