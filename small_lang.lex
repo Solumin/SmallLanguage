@@ -50,8 +50,11 @@ ws      [ \t]+
 "(\\" { return LAMBDA_OPEN; }
 "->" { return LAMBDA_ARROW; }
 "->"{ws}*\n { return LAMBDA_ARROW; }
+if      { return IF; }
+then    { return THEN; }
+else    { return ELSE; }
 func    { return FUNC; }
-return { return RETURN; }
+return  { return RETURN; }
 
 "+"   { return ADD; }
 "-"   { return SUB; }

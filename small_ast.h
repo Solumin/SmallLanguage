@@ -1,5 +1,3 @@
-// TODO:
-
 #ifndef SMALL_AST_H
 #define SMALL_AST_H
 
@@ -446,6 +444,44 @@ public:
         return str.str();
     }
 };
+
+class EIf : public Expr {
+    Expr *cond;
+    Expr *true_body;
+    Expr *false_body;
+public:
+    EIf (Expr *c, Expr *t, Expr *f) {
+        cond = c->clone();
+        true_body = t->clone();
+        false_body = f->clone();
+    }
+
+    EIf (const EIf &other) {
+        cond = other.cond->clone();
+        true_body = other.true_body->clone();
+        false_body = other.false_body->clone();
+    }
+
+    virtual ~EIf() {
+        delete cond;
+        delete true_body;
+        delete false_body;
+    }
+
+    virtual Expr *clone() {
+        return new EIf(*this);
+    }
+
+    virtual std::string toString() {
+        return "if " + cond->toString() +
+               " then " + true_body->toString() +
+               " else " + false_body->toString();
+    }
+};
+
+// ==========
+// STATEMENTS
+// ==========
 
 class Skip : public Statement {
 public:

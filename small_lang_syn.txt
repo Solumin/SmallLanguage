@@ -1,10 +1,8 @@
 TODO:
-- App, If
 - Values
 - Evaluate
 - Case, Patterns
 - Semicolons unnecessary (a la Go), newlines no longer syntactically significant
-    - Alt.: Indentation matters, as in Haskell and Python
 
 OK so let's talk about syntax.
 
@@ -26,7 +24,7 @@ Multiline string literal: '"""' char* '"""'
 
 comma sep list: expr (',' expr)*
 List literals: '[' comma_sep_list? ']'
-Tuple literals: '(' comma_set_list? ')'
+Tuple literals: '(' comma_sep_list? ')'
 
 map pair: Id '=>' expr
 Map literals: '{' (map_pair (',' map_pair)*)? '}'

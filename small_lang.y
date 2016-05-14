@@ -47,26 +47,33 @@ std::list<char*> tmp_str_list;
 %token <charlit> CHAR
 %token <boollit> BOOL
 
-%nonassoc FUNC_CALL
-%right <op1> LNOT
-%precedence NEG
-%left <op2> MUL DIV MOD
-%left <op2> ADD SUB
-
-%left <op2> LT LTE GT GTE
-%left <op2> EQ
-
+// Bison does precedence from lowest to highest
 %left <op2> LAND LOR
+
+%left <op2> EQ
+%left <op2> LT LTE GT GTE
+
+%left <op2> ADD SUB
+%left <op2> MUL DIV MOD
+%right NEG
+%right <op1> LNOT
+
+%nonassoc THEN
+%nonassoc ELSE
+
+%left ')'
+%right '('
 
 %token LAMBDA_OPEN "(\\"
 %token LAMBDA_ARROW "->"
 %token FUNC "func"
 %token LINE_COMMENT "//"
+%token IF "if" THEN "then" ELSE "else"
 
 %token ENDL
 %token RETURN
 
-%type <expr> expr list tuple lambda app
+%type <expr> expr list tuple lambda app if
 %type <stateval> program stmt seq any func_body
 
 %token END 0 "end of file"
@@ -103,6 +110,8 @@ expr:
     | list   { $$ = $1; }
     | tuple  { $$ = $1; }
     | lambda { $$ = $1; }
+    | app    { $$ = $1; }
+    | if     { $$ = $1; }
     | expr ADD expr { $$ = new EOp2(Op2::Add, $1, $3); }
     | expr SUB expr { $$ = new EOp2(Op2::Sub, $1, $3); }
     | expr MUL expr { $$ = new EOp2(Op2::Mul, $1, $3); }
@@ -117,7 +126,6 @@ expr:
     | expr EQ expr { $$ = new EOp2(Op2::Eq, $1, $3); }
     | LNOT expr      { $$ = new EOp1(Op1::LNot, $2); }
     | SUB expr %prec NEG { $$ = new EOp1(Op1::Neg, $2); }
-    | app { $$ = $1; }
 
 comma_sep_exprs:
     expr    { tmp_expr_list.push_back($1); }
@@ -153,6 +161,10 @@ app:
       { $$ = new EApp($fun, tmp_expr_list); tmp_expr_list.clear(); }
    | expr '(' ')'
       { $$ = new EApp($1, tmp_expr_list); }
+
+if:
+  IF expr[cond] THEN expr[t_body] ELSE expr[f_body]
+    { $$ = new EIf($cond, $t_body, $f_body); }
 
 ENDLS:
      ENDL
