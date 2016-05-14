@@ -1,12 +1,14 @@
 %option noyywrap
 %{
-#include <stdio.h>
-
 #include "small_lang.tab.h"
 
 #define YY_DECL extern "C" int yylex()
+void yyerror(const char *msg);
 
-int mylineno = 1;
+int yycolumn = 1;
+#define YY_USER_ACTION yylloc.first_line = yylloc.last_line = yylineno; \
+yylloc.first_column = yycolumn; yylloc.last_column = yycolumn+yyleng-1; \
+yycolumn += yyleng;
 %}
 
 /* Why define alpha ourselves instead of using [:alpha:]?
@@ -113,12 +115,12 @@ return  { return RETURN; }
     return CHAR;
 }
 
-\n  { mylineno++; return ENDL; }
+\n  { yycolumn = 1; return ENDL; }
 ;   { return ENDL; }
 
 {ws}
 "//".*$
 
-.       printf("%d: ERROR `%s`\n", mylineno, yytext);
+.       yyerror("Unknown token");
 
 %%

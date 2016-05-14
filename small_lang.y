@@ -5,7 +5,6 @@
 extern "C" int yylex();
 extern "C" int yyparse();
 extern "C" FILE *yyin;
-extern "C" int mylineno;
 
 void yyerror(const char *msg);
 %}
@@ -25,6 +24,7 @@ std::vector<char*> tmp_str_list;
 }
 
 %define parse.error verbose
+%locations
 
 %union{
     int ival;
@@ -200,5 +200,8 @@ int main( int argc, char** argv) {
 }
 
 void yyerror(const char *msg) {
-    std::cout << "Parse error on line " << mylineno << ": " << msg << '\n';
+    std::cout << "Parse error at ";
+    std::cout << yylloc.first_line << ":" << yylloc.first_column << " - ";
+    std::cout << yylloc.last_line << ":" << yylloc.last_column << ": ";
+    std::cout << msg << std::endl;
 }
