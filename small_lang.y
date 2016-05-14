@@ -73,7 +73,7 @@ std::vector<char*> tmp_str_list;
 %token RETURN
 
 %type <expr> expr list tuple lambda app if
-%type <stateval> program stmt seq any func_body
+%type <stateval> program stmt seq func_body
 
 %token END 0 "end of file"
 %%
@@ -93,10 +93,6 @@ stmt:
     | FUNC ID[name] '=' '{' func_body[body] '}'
         { $$ = new Assign($name, new ELambda(tmp_str_list, $body)); tmp_str_list.clear(); }
     | RETURN expr { $$ = new Return($2); }
-    | any   { $$ = $1; }
-
-any:
-   expr     { $$ = new Any($1); }
 
 expr:
     INT     { $$ = new EInt($1); }

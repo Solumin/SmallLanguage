@@ -1,5 +1,5 @@
-(\ a b c -> a + b + c)
-(\ a b c -> return a + b + c;)
+_ = (\ a b c -> a + b + c)
+_ = (\ a b c -> return a + b + c;)
 
 func a b c = { c }
 func a b c = {return c;}
@@ -10,8 +10,8 @@ g = (\ h ->
     return k;)
 
 // No args
-(\ -> 5)
-(\ -> return 5;)
+_ = (\ -> 5)
+_ = (\ -> return 5;)
 func d = { 5 }
 func d = { return 5; }
 
