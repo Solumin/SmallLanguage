@@ -47,7 +47,7 @@ EOp1: op expr
 
 ELambda: '(\' (id type)+ '->' (expr | Assign* Return) ')'
 
-EApp: id+
+EApp: expr(comma_sep_list)
 
 EIf: 'if' expr 'then' expr 'else' expr
 ECase: 'case' expr 'of' (pattern '->' expr)+

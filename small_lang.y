@@ -81,8 +81,10 @@ seq:
 
 stmt:
     ID '=' expr   { $$ = new Assign($1, $3); }
-    | ID id_list '=' '(' func_body ')'
-        { $$ = new Assign($1, new ELambda(tmp_args, $5)); tmp_args.clear(); }
+    | FUNC ID[name] id_list '=' '{' func_body[body] '}'
+        { $$ = new Assign($name, new ELambda(tmp_args, $body)); tmp_args.clear(); }
+    | FUNC ID[name] '=' '{' func_body[body] '}'
+        { $$ = new Assign($name, new ELambda(tmp_args, $body)); tmp_args.clear(); }
     | RETURN expr { $$ = new Return($2); }
     | any   { $$ = $1; }
 
@@ -118,6 +120,7 @@ expr:
 comma_sep:
     expr    { tmp_list.push_back($1); }
     | comma_sep ',' expr { tmp_list.push_back($3); }
+    | %empty
 
 list:
     '[' comma_sep ']' { $$ = new EList(tmp_list); tmp_list.clear(); }
@@ -126,16 +129,18 @@ tuple:
      '(' comma_sep ')' { $$ = new ETuple(tmp_list); tmp_list.clear(); }
 
 id_list:
-         ID           { tmp_args.push_back($1); }
-         | id_list ID { tmp_args.push_back($2); }
+       ID           { tmp_args.push_back($1); }
+       | id_list ID { tmp_args.push_back($2); }
 
 func_body:
-           expr      { $$ = new Return($1); }
-           | seq { $$ = $1; }
+         expr  { $$ = new Return($1); }
+         | seq { $$ = $1; }
 
 lambda:
       LAMBDA_OPEN id_list LAMBDA_ARROW func_body ')'
        { $$ = new ELambda(tmp_args, $4); tmp_args.clear(); }
+      | LAMBDA_OPEN LAMBDA_ARROW func_body ')'
+       { $$ = new ELambda(tmp_args, $3); tmp_args.clear(); }
 
 ENDLS:
      ENDL

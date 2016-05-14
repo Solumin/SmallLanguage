@@ -1,13 +1,17 @@
 (\ a b c -> a + b + c)
 (\ a b c -> return a + b + c;)
 
-a b c = ( c )
-a b c = (return c;)
+func a b c = { c }
+func a b c = {return c;}
 
 // Personally, I greatly prefer this syntax over "a b c"..
 g = (\ h ->
     i = j + 1;
     return k;)
 
-
+// No args
+(\ -> 5)
+(\ -> return 5;)
+func d = { 5 }
+func d = { return 5; }
 
