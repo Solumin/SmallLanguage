@@ -1,7 +1,7 @@
 %{
 #include <iostream>
 #include <cstdio>
-#include <list>
+#include <vector>
 
 extern "C" int yylex();
 extern "C" int yyparse();
@@ -21,8 +21,8 @@ Statement *ast_root;
 
 // tmp Expr list for building list literals and tuples
 // TODO: Got to be a safer way to do this. Consider nested lists!
-std::list<Expr *> tmp_expr_list;
-std::list<char*> tmp_str_list;
+std::vector<Expr *> tmp_expr_list;
+std::vector<char*> tmp_str_list;
 }
 
 %define parse.error verbose

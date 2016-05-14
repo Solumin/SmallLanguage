@@ -3,7 +3,6 @@
 
 #include <string>
 #include <sstream>
-#include <list>
 #include <vector>
 
 #include <iostream>
@@ -232,16 +231,16 @@ public:
 };
 
 class EList : public Expr {
-    std::list<Expr*> value;
+    std::vector<Expr*> value;
 public:
     EList () {}
 
-    EList (std::list<Expr*> l) {
-        value = l;
+    EList (std::vector<Expr*> l) {
+        value = std::vector<Expr*>(l);
     }
 
     EList (Expr *e) {
-        value.push_front(e);
+        value.push_back(e);
     }
 
     EList (const EList &other) {
@@ -259,7 +258,7 @@ public:
     virtual std::string toString() {
         std::stringstream str;
         str << "[";
-        for (std::list<Expr*>::iterator it = value.begin(); it != value.end(); ++it) {
+        for (std::vector<Expr*>::iterator it = value.begin(); it != value.end(); ++it) {
             str << (*it)->toString();
             if (++it != value.end())
                 str << ", ";
@@ -277,14 +276,7 @@ public:
     ETuple() {}
 
     ETuple (std::vector<Expr*> l) {
-        value = l;
-        size = l.size();
-    }
-
-    ETuple (std::list<Expr*> l) {
-        for (std::list<Expr*>::iterator it = l.begin(); it != l.end(); ++it) {
-            value.push_back(*it);
-        }
+        value = std::vector<Expr*>(l);
         size = l.size();
     }
 
@@ -375,8 +367,8 @@ class ELambda : public Expr {
     std::vector<std::string> params;
     Statement *body;
 public:
-    ELambda (std::list<char*> ids, Statement *b) {
-        for (std::list<char*>::iterator it = ids.begin(); it != ids.end(); ++it) {
+    ELambda (std::vector<char*> ids, Statement *b) {
+        for (std::vector<char*>::iterator it = ids.begin(); it != ids.end(); ++it) {
             params.push_back(std::string(*it));
         }
         body = b->clone();
@@ -411,11 +403,9 @@ class EApp : public Expr {
     Expr *func;
     std::vector<Expr*> args;
 public:
-    EApp (Expr *f, std::list<Expr*> as) {
+    EApp (Expr *f, std::vector<Expr*> as) {
         func = f->clone();
-        for (std::list<Expr*>::iterator it = as.begin(); it != as.end(); ++it) {
-            args.push_back(*it);
-        }
+        args = std::vector<Expr*>(as);
     }
 
     EApp (const EApp &other) {
@@ -578,18 +568,18 @@ public:
 /*     std::vector<std::string> params; */
 /*     Statement *body; */
 /* public: */
-/*     Function (std::string n, std::list<char*> ids, Statement *b) { */
+/*     Function (std::string n, std::vector<char*> ids, Statement *b) { */
 /*         name = n; */
 /*         body = b->clone(); */
-/*         for (std::list<char*>::iterator it = ids.begin(); it != ids.end(); ++it) { */
+/*         for (std::vector<char*>::iterator it = ids.begin(); it != ids.end(); ++it) { */
 /*             params.push_back(std::string(*it)); */
 /*         } */
 /*     } */
 
-/*     Function (char* n, std::list<char*> ids, Statement *b) { */
+/*     Function (char* n, std::vector<char*> ids, Statement *b) { */
 /*         name = std::string(n); */
 /*         body = b->clone(); */
-/*         for (std::list<char*>::iterator it = ids.begin(); it != ids.end(); ++it) { */
+/*         for (std::vector<char*>::iterator it = ids.begin(); it != ids.end(); ++it) { */
 /*             params.push_back(std::string(*it)); */
 /*         } */
 /*     } */
