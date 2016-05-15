@@ -1,6 +1,8 @@
 #include <string>
 
 #include "small_stmt.hpp"
+#include "small_expr.hpp"
+/* #include "small_lang_forwards.h" */
 
 Seq::Seq (Statement *a, Statement *b) {
     s1 = a->clone();
@@ -23,6 +25,10 @@ Statement *Seq::clone() {
 
 std::string Seq::toString() {
     return s1->toString() + "\n" + s2->toString();
+}
+
+Env Seq::evaluate(Env env) {
+    return s2->evaluate(s1->evaluate(env));
 }
 
 
@@ -48,6 +54,16 @@ std::string Assign::toString() {
     return id + " = " + e->toString() + ";";
 }
 
+Env Assign::evaluate(Env env) {
+    Value *res = e->evaluate(env);
+    if (env.count(id) > 0) {
+        throw "Variable already exists";
+    } else {
+        env.insert({id, res});
+    }
+    return env;
+}
+
 
 Return::Return (Expr *any) {
     e = any->clone();
@@ -67,4 +83,10 @@ Statement *Return::clone() {
 
 std::string Return::toString() {
     return "return " + e->toString() + ";";
+}
+
+Env Return::evaluate(Env env) {
+    Value *res = e->evaluate(env);
+    env.insert({"return", res});
+    return env;
 }

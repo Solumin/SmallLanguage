@@ -3,6 +3,8 @@
 #include <vector>
 
 #include "small_expr.hpp"
+#include "small_values.hpp"
+#include "small_env.hpp"
 
 EId::EId (std::string name) {
     id = name;
@@ -26,6 +28,10 @@ std::string EId::toString() {
     return id;
 }
 
+Value *EId::evaluate(Env env) {
+    return env.at(id);
+}
+
 
 EInt::EInt (int v) {
     value = v;
@@ -43,6 +49,10 @@ Expr *EInt::clone() {
 
 std::string EInt::toString() {
     return std::to_string(value);
+}
+
+Value *EInt::evaluate(Env env) {
+    return new VInt(value);
 }
 
 
@@ -64,6 +74,10 @@ std::string EFloat::toString() {
     return std::to_string(value);
 }
 
+Value *EFloat::evaluate(Env env) {
+    return new VFloat(value);
+}
+
 
 EBool::EBool (bool b) {
     value = b;
@@ -83,6 +97,9 @@ std::string EBool::toString() {
     return value ? "true" : "false";
 }
 
+Value *EBool::evaluate(Env env) {
+    return new VBool(value);
+}
 
 EChar::EChar (char c) {
     value = c;
@@ -101,6 +118,10 @@ Expr *EChar::clone() {
 // TODO: Print 'c', '\xNN', '\'' depending!
 std::string EChar::toString() {
     return std::string(1, value);
+}
+
+Value *EChar::evaluate(Env env) {
+    return new VChar(value);
 }
 
 
@@ -124,6 +145,10 @@ Expr *EString::clone() {
 
 std::string EString::toString() {
     return value;
+}
+
+Value *EString::evaluate(Env env) {
+    return new VString(value);
 }
 
 
@@ -162,6 +187,14 @@ std::string EList::toString() {
     return str.str();
 }
 
+Value *EList::evaluate(Env env) {
+    std::vector<Value*> vlist;
+    for (std::vector<Expr*>::iterator it = value.begin(); it != value.end(); ++it) {
+        vlist.push_back((*it)->evaluate(env));
+    }
+    return new VList(vlist);
+}
+
 
 ETuple::ETuple() { size = 0; }
 
@@ -193,6 +226,14 @@ std::string ETuple::toString() {
     }
     str << ")";
     return str.str();
+}
+
+Value *ETuple::evaluate(Env env) {
+    std::vector<Value*> vlist;
+    for (std::vector<Expr*>::iterator it = value.begin(); it != value.end(); ++it) {
+        vlist.push_back((*it)->evaluate(env));
+    }
+    return new VList(vlist);
 }
 
 
@@ -244,6 +285,10 @@ std::string EOp1::toString() {
     return Op1Strings[(int)op] + e->toString();
 }
 
+Value *EOp1::evaluate(Env env) {
+
+}
+
 
 ELambda::ELambda (std::vector<char*> ids, Statement *b) {
     for (std::vector<char*>::iterator it = ids.begin(); it != ids.end(); ++it) {
@@ -274,6 +319,10 @@ std::string ELambda::toString() {
     }
     str << "-> " << body->toString() << ")";
     return str.str();
+}
+
+Value *ELambda::evaluate(Env env) {
+    return new VClos(*this, env);
 }
 
 
@@ -308,6 +357,37 @@ std::string EApp::toString() {
     return str.str();
 }
 
+Value *EApp::evaluate(Env env) {
+    // Get the evaluated lambda
+    VClos *clos = dynamic_cast<VClos*>(func->evaluate(env));
+
+    if (clos == NULL)
+        throw "App: LHS did not eval to function";
+
+    std::vector<std::string> params = clos->getLambda()->getParams();
+
+    // Add the param => arg mapping to the env
+    if (params.length != args.length)
+        throw "App: params and args length mismatch";
+
+    std::vector<std::string>::iterator params_iter = params.begin();
+    std::vector<Expr*>::iterator args_iter = args.begin();
+
+    Env env_copy = env;
+
+    while(args_iter != args.end() && params_iter != params.end()) {
+        env_copy.insert({*paramsiter, (*args_iter)->evaluate(env)});
+        ++args_iter;
+        ++params_iter;
+    }
+
+    Env res_env = body->evaluate(env_copy);
+
+    if (res_env.count("return") == 0)
+        throw "App: Function had no return statement";
+
+    return res_env["return"];
+}
 
 EIf::EIf (Expr *c, Expr *t, Expr *f) {
     cond = c->clone();
@@ -337,3 +417,14 @@ std::string EIf::toString() {
         " else " + false_body->toString();
 }
 
+Value *EIf::evaluate(Env env) {
+    VBool *c = dynamic_cast<VBool*>(cond->evaluate(env));
+
+    if (c == NULL)
+        throw ("This language is NOT \"truthy\", and If-cond did not evaluate to bool: " + cond->toString());
+
+    if (c->getValue())
+        return true_body->evaluate(env);
+    else
+        return false_body->evaluate(env);
+}

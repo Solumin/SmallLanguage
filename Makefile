@@ -9,7 +9,7 @@ BALLOUT=$(BTABH) $(BTABC)
 HEADERS=*.hpp
 CPPFILES=*.cpp
 
-ASTH=small_ast.h
+ASTH=small_ast.hpp
 
 EXEF=small_parser.exe
 

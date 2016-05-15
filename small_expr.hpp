@@ -4,8 +4,10 @@
 #include <string>
 #include <vector>
 
+#include "small_lang_forwards.h"
 #include "small_ops.hpp"
 #include "small_stmt.hpp"
+#include "small_env.hpp"
 
 class Statement;
 
@@ -17,8 +19,7 @@ class Expr {
 
     virtual std::string toString() = 0;
 
-    // Should also have the value of the expr
-    // virtual Value evaluate(env) = 0;
+    virtual Value *evaluate(Env) = 0;
 };
 
 class EId : public Expr {
@@ -36,12 +37,14 @@ class EId : public Expr {
     virtual Expr *clone();
 
     virtual std::string toString();
+
+    virtual Value *evaluate(Env);
 };
 
 class EInt : public Expr {
     int value;
 
-	public:
+    public:
     EInt (int);
 
     EInt (const EInt &);
@@ -51,12 +54,14 @@ class EInt : public Expr {
     virtual Expr *clone();
 
     virtual std::string toString();
+
+    virtual Value *evaluate(Env);
 };
 
 class EFloat : public Expr {
     float value;
 
-	public:
+    public:
     EFloat (float);
 
     EFloat (const EFloat &);
@@ -66,12 +71,14 @@ class EFloat : public Expr {
     virtual Expr *clone();
 
     virtual std::string toString();
+
+    virtual Value *evaluate(Env);
 };
 
 class EBool : public Expr {
     bool value;
 
-	public:
+    public:
     EBool (bool);
 
     EBool (const EBool &);
@@ -81,12 +88,14 @@ class EBool : public Expr {
     virtual Expr *clone();
 
     virtual std::string toString();
+
+    virtual Value *evaluate(Env);
 };
 
 class EChar : public Expr {
     char value;
 
-	public:
+    public:
     EChar (char);
 
     EChar (const EChar &);
@@ -96,12 +105,14 @@ class EChar : public Expr {
     virtual Expr *clone();
 
     virtual std::string toString();
+
+    virtual Value *evaluate(Env);
 };
 
 class EString : public Expr {
     std::string value;
 
-	public:
+    public:
     EString (std::string);
 
     EString (const char*);
@@ -113,12 +124,14 @@ class EString : public Expr {
     virtual Expr *clone();
 
     virtual std::string toString();
+
+    virtual Value *evaluate(Env);
 };
 
 class EList : public Expr {
     std::vector<Expr*> value;
 
-	public:
+    public:
     EList ();
 
     EList (std::vector<Expr*>);
@@ -132,13 +145,15 @@ class EList : public Expr {
     virtual Expr *clone();
 
     virtual std::string toString();
+
+    virtual Value *evaluate(Env);
 };
 
 class ETuple : public Expr {
     std::vector<Expr*> value;
     int size;
 
-	public:
+    public:
     ETuple();
 
     ETuple (std::vector<Expr*>);
@@ -150,13 +165,15 @@ class ETuple : public Expr {
     virtual Expr *clone();
 
     virtual std::string toString();
+
+    virtual Value *evaluate(Env);
 };
 
 class EOp2 : public Expr {
     Expr *left, *right;
     Op2 op;
 
-	public:
+    public:
     EOp2 (Op2, Expr *l, Expr *r);
 
     EOp2 (const EOp2 &);
@@ -166,13 +183,15 @@ class EOp2 : public Expr {
     virtual Expr *clone();
 
     virtual std::string toString();
+
+    virtual Value *evaluate(Env);
 };
 
 class EOp1 : public Expr {
     Expr *e;
     Op1 op;
 
-	public:
+    public:
     EOp1 (Op1, Expr *x);
 
     EOp1 (const EOp1 &);
@@ -182,13 +201,15 @@ class EOp1 : public Expr {
     virtual Expr *clone();
 
     virtual std::string toString();
+
+    virtual Value *evaluate(Env);
 };
 
 class ELambda : public Expr {
     std::vector<std::string> params;
     Statement *body;
 
-	public:
+    public:
     ELambda (std::vector<char*>, Statement *);
 
     ELambda (const ELambda &);
@@ -198,13 +219,23 @@ class ELambda : public Expr {
     virtual Expr *clone();
 
     virtual std::string toString();
+
+    virtual Value *evaluate(Env);
+
+    std::vector<std::string> getParams() {
+        return params;
+    }
+
+    Statement *getBody() {
+        return body;
+    }
 };
 
 class EApp : public Expr {
     Expr *func;
     std::vector<Expr*> args;
 
-	public:
+    public:
     EApp (Expr *f, std::vector<Expr*>);
 
     EApp (const EApp &);
@@ -214,6 +245,8 @@ class EApp : public Expr {
     virtual Expr *clone();
 
     virtual std::string toString();
+
+    virtual Value *evaluate(Env);
 };
 
 class EIf : public Expr {
@@ -221,7 +254,7 @@ class EIf : public Expr {
     Expr *true_body;
     Expr *false_body;
 
-	public:
+    public:
     EIf (Expr *c, Expr *t, Expr *f);
 
     EIf (const EIf &);
@@ -231,6 +264,8 @@ class EIf : public Expr {
     virtual Expr *clone();
 
     virtual std::string toString();
+
+    virtual Value *evaluate(Env);
 };
 
 #endif

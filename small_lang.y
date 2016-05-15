@@ -10,12 +10,12 @@ void yyerror(const char *msg);
 %}
 
 %code requires {
-#include "small_ast.h"
+#include "small_lang_includes.h"
 }
 
 %code {
 // The root of the AST
-Statement *ast_root;
+AST *ast;
 
 // tmp Expr list for building list literals and tuples
 // TODO: Got to be a safer way to do this. Consider nested lists!
@@ -79,8 +79,8 @@ std::vector<char*> tmp_str_list;
 %%
 
 program:
-    ENDLS seq   { $$ = $2; ast_root = $$; }
-    | seq       { $$ = $1; ast_root = $$;}
+    ENDLS seq   { $$ = $2; ast = new AST($$); }
+    | seq       { $$ = $1; ast = new AST($$);}
 
 seq:
    stmt ENDLS seq  { $$ = new Seq($1, $3); }
@@ -186,11 +186,11 @@ int main( int argc, char** argv) {
     std::cout << "Parsing completed." << std::endl;
     fclose(yyin);
 
-    if (ast_root == NULL) {
+    if (ast == NULL) {
         std::cout << "Parsing failed." << std::endl;
         return 2;
     } else {
-        std::cout << "The program:\n" << ast_root->toString() << std::endl;;
+        std::cout << "The program:\n" << ast->toString() << std::endl;;
     }
     return 0;
 }

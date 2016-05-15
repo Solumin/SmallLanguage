@@ -3,17 +3,18 @@
 
 #include <string>
 
-#include "small_expr.hpp"
-
-class Expr;
+#include "small_lang_forwards.h"
+#include "small_env.hpp"
 
 class Statement {
     public:
-    virtual ~Statement() {}
+        virtual ~Statement() {}
 
-    virtual Statement *clone() = 0;
+        virtual Statement *clone() = 0;
 
-    virtual std::string toString() = 0;
+        virtual std::string toString() = 0;
+
+        virtual Env evaluate(Env env) = 0;
 };
 
 class Seq : public Statement {
@@ -28,6 +29,8 @@ class Seq : public Statement {
     virtual Statement *clone();
 
     virtual std::string toString();
+
+    virtual Env evaluate(Env env);
 };
 
 class Assign : public Statement {
@@ -43,6 +46,8 @@ class Assign : public Statement {
     virtual Statement *clone();
 
     virtual std::string toString();
+
+    virtual Env evaluate(Env env);
 };
 
 class Return : public Statement {
@@ -57,6 +62,8 @@ class Return : public Statement {
     virtual Statement *clone();
 
     virtual std::string toString();
+
+    virtual Env evaluate(Env env);
 };
 
 #endif
