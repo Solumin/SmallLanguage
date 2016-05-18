@@ -2,11 +2,7 @@ I really need to try to approach this as C++, not "imperative Haskell" like I
 have been. e.g. no immutable data structures, no pattern matching,
 getters/setters for things instead of direct access, etc.
 
-Like when evaluating function application. I can bind all the params to the args
-in the Env map, then evaluate the function body. But then I have to remove them
-from the Env again! And _that_ could lead to variables being overwritten instead
-of shadowed. WHICH IS WHY IMMUTABLE WORKS BETTER.
-Easiest solution of course is to just copy...
+Current task: Evaluating EOp1 and EOp2
 
 TODO:
 - Evaluate
