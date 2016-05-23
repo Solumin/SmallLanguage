@@ -244,6 +244,7 @@ class VClos : public Value {
     ELambda *lambda;
     Env env;
     public:
+    // TODO: Is this the correct way to copy the env?
     VClos (Expr *l, Env e) {
         lambda = l->clone();
         env = e;
