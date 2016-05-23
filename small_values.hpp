@@ -5,7 +5,7 @@
 #include <sstream>
 #include <vector>
 
-#include "small_expr.hpp"
+#include "small_lang_forwards.h"
 
 class Value {
     public:

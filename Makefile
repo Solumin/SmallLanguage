@@ -9,8 +9,6 @@ BALLOUT=$(BTABH) $(BTABC)
 HEADERS=*.hpp
 CPPFILES=*.cpp
 
-ASTH=small_ast.hpp
-
 EXEF=small_parser.exe
 
 .PHONY: parser lexer bison clean clean-all
@@ -25,13 +23,13 @@ bison: $(BALLOUT)
 
 # "Low-level" targets for making the executable and other files
 
-$(EXEF): $(LEXOUT) $(BALLOUT)
+$(EXEF): $(LEXOUT) $(BALLOUT) $(CPPFILES)
 	g++ -g -o $(EXEF) $(BTABC) $(LEXOUT) $(CPPFILES)
 
-$(BALLOUT): $(BISONIN) $(ASTH)
+$(BALLOUT): $(BISONIN)
 	bison -d $(BISONIN)
 
-$(LEXOUT): $(LEXIN) $(BTABH) $(ASTH)
+$(LEXOUT): $(LEXIN) $(BTABH)
 	flex $(LEXIN)
 
 clean:

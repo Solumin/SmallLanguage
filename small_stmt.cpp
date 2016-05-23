@@ -2,7 +2,12 @@
 
 #include "small_stmt.hpp"
 #include "small_expr.hpp"
-/* #include "small_lang_forwards.h" */
+#include "small_visitor.hpp"
+#include "small_lang_forwards.h"
+
+// ================
+// ***** Seq ******
+// ================
 
 Seq::Seq (Statement *a, Statement *b) {
     s1 = a->clone();
@@ -27,10 +32,13 @@ std::string Seq::toString() {
     return s1->toString() + "\n" + s2->toString();
 }
 
-Env Seq::evaluate(Env env) {
-    return s2->evaluate(s1->evaluate(env));
+void Seq::accept(Visitor &v) {
+    v.visit(this);
 }
 
+// ================
+// *** Assign *****
+// ================
 
 Assign::Assign (std::string name, Expr *lhs) {
     id = name;
@@ -54,16 +62,13 @@ std::string Assign::toString() {
     return id + " = " + e->toString() + ";";
 }
 
-Env Assign::evaluate(Env env) {
-    Value *res = e->evaluate(env);
-    if (env.count(id) > 0) {
-        throw "Variable already exists";
-    } else {
-        env.insert({id, res});
-    }
-    return env;
+void Assign::accept(Visitor &v) {
+    v.visit(this);
 }
 
+// ================
+// *** Return *****
+// ================
 
 Return::Return (Expr *any) {
     e = any->clone();
@@ -85,8 +90,6 @@ std::string Return::toString() {
     return "return " + e->toString() + ";";
 }
 
-Env Return::evaluate(Env env) {
-    Value *res = e->evaluate(env);
-    env.insert({"return", res});
-    return env;
+void Return::accept(Visitor &v) {
+    v.visit(this);
 }

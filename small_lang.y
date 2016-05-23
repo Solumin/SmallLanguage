@@ -10,12 +10,13 @@ void yyerror(const char *msg);
 %}
 
 %code requires {
-#include "small_lang_includes.h"
+#include "small_expr.hpp"
+#include "small_stmt.hpp"
 }
 
 %code {
 // The root of the AST
-AST *ast;
+Statement *ast;
 
 // tmp Expr list for building list literals and tuples
 // TODO: Got to be a safer way to do this. Consider nested lists!
@@ -79,8 +80,8 @@ std::vector<char*> tmp_str_list;
 %%
 
 program:
-    ENDLS seq   { $$ = $2; ast = new AST($$); }
-    | seq       { $$ = $1; ast = new AST($$);}
+    ENDLS seq   { $$ = $2; ast = $$; }
+    | seq       { $$ = $1; ast = $$;}
 
 seq:
    stmt ENDLS seq  { $$ = new Seq($1, $3); }

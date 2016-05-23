@@ -4,22 +4,19 @@
 #include <string>
 #include <vector>
 
-#include "small_lang_forwards.h"
 #include "small_ops.hpp"
-#include "small_stmt.hpp"
-#include "small_env.hpp"
 
-class Statement;
+#include "small_lang_forwards.h"
 
 class Expr {
-	public:
-    virtual ~Expr() {}
+    public:
+        virtual ~Expr() {}
 
-    virtual Expr *clone() = 0;
+        virtual Expr *clone() = 0;
 
-    virtual std::string toString() = 0;
+        virtual std::string toString() = 0;
 
-    virtual Value *evaluate(Env) = 0;
+        virtual void accept(Visitor &v) = 0;
 };
 
 class EId : public Expr {
@@ -38,7 +35,7 @@ class EId : public Expr {
 
     virtual std::string toString();
 
-    virtual Value *evaluate(Env);
+    virtual void accept(Visitor&);
 };
 
 class EInt : public Expr {
@@ -55,7 +52,7 @@ class EInt : public Expr {
 
     virtual std::string toString();
 
-    virtual Value *evaluate(Env);
+    virtual void accept(Visitor&);
 };
 
 class EFloat : public Expr {
@@ -72,7 +69,7 @@ class EFloat : public Expr {
 
     virtual std::string toString();
 
-    virtual Value *evaluate(Env);
+    virtual void accept(Visitor&);
 };
 
 class EBool : public Expr {
@@ -89,7 +86,7 @@ class EBool : public Expr {
 
     virtual std::string toString();
 
-    virtual Value *evaluate(Env);
+    virtual void accept(Visitor&);
 };
 
 class EChar : public Expr {
@@ -106,7 +103,7 @@ class EChar : public Expr {
 
     virtual std::string toString();
 
-    virtual Value *evaluate(Env);
+    virtual void accept(Visitor&);
 };
 
 class EString : public Expr {
@@ -125,7 +122,7 @@ class EString : public Expr {
 
     virtual std::string toString();
 
-    virtual Value *evaluate(Env);
+    virtual void accept(Visitor&);
 };
 
 class EList : public Expr {
@@ -146,7 +143,7 @@ class EList : public Expr {
 
     virtual std::string toString();
 
-    virtual Value *evaluate(Env);
+    virtual void accept(Visitor&);
 };
 
 class ETuple : public Expr {
@@ -166,7 +163,7 @@ class ETuple : public Expr {
 
     virtual std::string toString();
 
-    virtual Value *evaluate(Env);
+    virtual void accept(Visitor&);
 };
 
 class EOp2 : public Expr {
@@ -184,7 +181,7 @@ class EOp2 : public Expr {
 
     virtual std::string toString();
 
-    virtual Value *evaluate(Env);
+    virtual void accept(Visitor&);
 };
 
 class EOp1 : public Expr {
@@ -202,7 +199,7 @@ class EOp1 : public Expr {
 
     virtual std::string toString();
 
-    virtual Value *evaluate(Env);
+    virtual void accept(Visitor&);
 };
 
 class ELambda : public Expr {
@@ -220,7 +217,7 @@ class ELambda : public Expr {
 
     virtual std::string toString();
 
-    virtual Value *evaluate(Env);
+    virtual void accept(Visitor&);
 
     std::vector<std::string> getParams() {
         return params;
@@ -246,7 +243,7 @@ class EApp : public Expr {
 
     virtual std::string toString();
 
-    virtual Value *evaluate(Env);
+    virtual void accept(Visitor&);
 };
 
 class EIf : public Expr {
@@ -265,7 +262,7 @@ class EIf : public Expr {
 
     virtual std::string toString();
 
-    virtual Value *evaluate(Env);
+    virtual void accept(Visitor&);
 };
 
 #endif

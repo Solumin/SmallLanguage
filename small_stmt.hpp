@@ -3,8 +3,9 @@
 
 #include <string>
 
+/* #include "small_expr.hpp" */
+/* #include "small_visitor.hpp" */
 #include "small_lang_forwards.h"
-#include "small_env.hpp"
 
 class Statement {
     public:
@@ -14,7 +15,7 @@ class Statement {
 
         virtual std::string toString() = 0;
 
-        virtual Env evaluate(Env env) = 0;
+        virtual void accept(Visitor&) = 0;
 };
 
 class Seq : public Statement {
@@ -30,7 +31,7 @@ class Seq : public Statement {
 
     virtual std::string toString();
 
-    virtual Env evaluate(Env env);
+    virtual void accept(Visitor&);
 };
 
 class Assign : public Statement {
@@ -47,7 +48,7 @@ class Assign : public Statement {
 
     virtual std::string toString();
 
-    virtual Env evaluate(Env env);
+    virtual void accept(Visitor&);
 };
 
 class Return : public Statement {
@@ -63,7 +64,7 @@ class Return : public Statement {
 
     virtual std::string toString();
 
-    virtual Env evaluate(Env env);
+    virtual void accept(Visitor&);
 };
 
 #endif

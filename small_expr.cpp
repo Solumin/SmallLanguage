@@ -3,8 +3,12 @@
 #include <vector>
 
 #include "small_expr.hpp"
-#include "small_values.hpp"
-#include "small_env.hpp"
+#include "small_ops.hpp"
+#include "small_visitor.hpp"
+
+// ================
+// ***** EId ******
+// ================
 
 EId::EId (std::string name) {
     id = name;
@@ -28,10 +32,13 @@ std::string EId::toString() {
     return id;
 }
 
-Value *EId::evaluate(Env env) {
-    return env.at(id);
+void EId::accept(Visitor &v) {
+    v.visit(this);
 }
 
+// ================
+// **** EInt ******
+// ================
 
 EInt::EInt (int v) {
     value = v;
@@ -51,10 +58,13 @@ std::string EInt::toString() {
     return std::to_string(value);
 }
 
-Value *EInt::evaluate(Env env) {
-    return new VInt(value);
+void EInt::accept(Visitor &v) {
+    v.visit(this);
 }
 
+// ================
+// **** EFloat ****
+// ================
 
 EFloat::EFloat (float v) {
     value = v;
@@ -74,10 +84,13 @@ std::string EFloat::toString() {
     return std::to_string(value);
 }
 
-Value *EFloat::evaluate(Env env) {
-    return new VFloat(value);
+void EFloat::accept(Visitor &v) {
+    v.visit(this);
 }
 
+// ================
+// **** EBool *****
+// ================
 
 EBool::EBool (bool b) {
     value = b;
@@ -97,9 +110,13 @@ std::string EBool::toString() {
     return value ? "true" : "false";
 }
 
-Value *EBool::evaluate(Env env) {
-    return new VBool(value);
+void EBool::accept(Visitor &v) {
+    v.visit(this);
 }
+
+// ================
+// **** EChar *****
+// ================
 
 EChar::EChar (char c) {
     value = c;
@@ -120,10 +137,13 @@ std::string EChar::toString() {
     return std::string(1, value);
 }
 
-Value *EChar::evaluate(Env env) {
-    return new VChar(value);
+void EChar::accept(Visitor &v) {
+    v.visit(this);
 }
 
+// ================
+// *** EString ****
+// ================
 
 EString::EString (std::string v) {
     value = v;
@@ -147,10 +167,13 @@ std::string EString::toString() {
     return value;
 }
 
-Value *EString::evaluate(Env env) {
-    return new VString(value);
+void EString::accept(Visitor &v) {
+    v.visit(this);
 }
 
+// ================
+// **** EList *****
+// ================
 
 EList::EList () {}
 
@@ -187,14 +210,13 @@ std::string EList::toString() {
     return str.str();
 }
 
-Value *EList::evaluate(Env env) {
-    std::vector<Value*> vlist;
-    for (std::vector<Expr*>::iterator it = value.begin(); it != value.end(); ++it) {
-        vlist.push_back((*it)->evaluate(env));
-    }
-    return new VList(vlist);
+void EList::accept(Visitor &v) {
+    v.visit(this);
 }
 
+// ================
+// **** ETuple ****
+// ================
 
 ETuple::ETuple() { size = 0; }
 
@@ -228,14 +250,13 @@ std::string ETuple::toString() {
     return str.str();
 }
 
-Value *ETuple::evaluate(Env env) {
-    std::vector<Value*> vlist;
-    for (std::vector<Expr*>::iterator it = value.begin(); it != value.end(); ++it) {
-        vlist.push_back((*it)->evaluate(env));
-    }
-    return new VList(vlist);
+void ETuple::accept(Visitor &v) {
+    v.visit(this);
 }
 
+// ================
+// ***** EOp2 *****
+// ================
 
 EOp2::EOp2 (Op2 o, Expr *l, Expr *r) {
     op = o;
@@ -262,6 +283,13 @@ std::string EOp2::toString() {
     return left->toString() + Op2Strings[(int)op] + right->toString();
 }
 
+void EOp2::accept(Visitor &v) {
+    v.visit(this);
+}
+
+// ================
+// ***** EOp1 *****
+// ================
 
 EOp1::EOp1 (Op1 o, Expr *x) {
     op = o;
@@ -285,10 +313,13 @@ std::string EOp1::toString() {
     return Op1Strings[(int)op] + e->toString();
 }
 
-Value *EOp1::evaluate(Env env) {
-
+void EOp1::accept(Visitor &v) {
+    v.visit(this);
 }
 
+// ================
+// *** ELambda ****
+// ================
 
 ELambda::ELambda (std::vector<char*> ids, Statement *b) {
     for (std::vector<char*>::iterator it = ids.begin(); it != ids.end(); ++it) {
@@ -321,10 +352,13 @@ std::string ELambda::toString() {
     return str.str();
 }
 
-Value *ELambda::evaluate(Env env) {
-    return new VClos(*this, env);
+void ELambda::accept(Visitor &v) {
+    v.visit(this);
 }
 
+// ================
+// ***** EApp *****
+// ================
 
 EApp::EApp (Expr *f, std::vector<Expr*> as) {
     func = f->clone();
@@ -357,37 +391,13 @@ std::string EApp::toString() {
     return str.str();
 }
 
-Value *EApp::evaluate(Env env) {
-    // Get the evaluated lambda
-    VClos *clos = dynamic_cast<VClos*>(func->evaluate(env));
-
-    if (clos == NULL)
-        throw "App: LHS did not eval to function";
-
-    std::vector<std::string> params = clos->getLambda()->getParams();
-
-    // Add the param => arg mapping to the env
-    if (params.length != args.length)
-        throw "App: params and args length mismatch";
-
-    std::vector<std::string>::iterator params_iter = params.begin();
-    std::vector<Expr*>::iterator args_iter = args.begin();
-
-    Env env_copy = env;
-
-    while(args_iter != args.end() && params_iter != params.end()) {
-        env_copy.insert({*paramsiter, (*args_iter)->evaluate(env)});
-        ++args_iter;
-        ++params_iter;
-    }
-
-    Env res_env = body->evaluate(env_copy);
-
-    if (res_env.count("return") == 0)
-        throw "App: Function had no return statement";
-
-    return res_env["return"];
+void EApp::accept(Visitor &v) {
+    v.visit(this);
 }
+
+// ================
+// ***** EIf ******
+// ================
 
 EIf::EIf (Expr *c, Expr *t, Expr *f) {
     cond = c->clone();
@@ -417,14 +427,6 @@ std::string EIf::toString() {
         " else " + false_body->toString();
 }
 
-Value *EIf::evaluate(Env env) {
-    VBool *c = dynamic_cast<VBool*>(cond->evaluate(env));
-
-    if (c == NULL)
-        throw ("This language is NOT \"truthy\", and If-cond did not evaluate to bool: " + cond->toString());
-
-    if (c->getValue())
-        return true_body->evaluate(env);
-    else
-        return false_body->evaluate(env);
+void EIf::accept(Visitor &v) {
+    v.visit(this);
 }

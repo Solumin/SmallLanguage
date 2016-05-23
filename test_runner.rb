@@ -1,3 +1,5 @@
+#!/usr/bin/ruby
+
 # Test files are in the 'examples/' directory
 tests = Dir['examples/*']
 # The executable:
