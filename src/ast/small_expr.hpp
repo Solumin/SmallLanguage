@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-#include "small_ops.hpp"
+#include "ast/small_ops.hpp"
 
 #include "small_lang_forwards.h"
 

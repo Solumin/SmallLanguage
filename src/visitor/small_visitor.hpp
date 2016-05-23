@@ -1,8 +1,8 @@
 #ifndef SMALL_VISITOR_HPP
 #define SMALL_VISITOR_HPP
 
-#include "small_expr.hpp"
-#include "small_stmt.hpp"
+#include "ast/small_expr.hpp"
+#include "ast/small_stmt.hpp"
 
 #include "small_lang_forwards.h"
 

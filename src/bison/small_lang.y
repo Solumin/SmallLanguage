@@ -10,8 +10,8 @@ void yyerror(const char *msg);
 %}
 
 %code requires {
-#include "small_expr.hpp"
-#include "small_stmt.hpp"
+#include "ast/small_expr.hpp"
+#include "ast/small_stmt.hpp"
 }
 
 %code {
@@ -174,26 +174,18 @@ ENDLS:
 
 %%
 
-int main( int argc, char** argv) {
-    yyin = fopen(argv[1], "r");
-    if (!yyin) {
-        std::cout << "Failed to open " << argv[1] << std::endl;
-        return 1;
-    }
+extern "C" Statement *runparser(FILE *source);
+// Runs the parser, returning the generate AST. Assumes the input FILE *source
+// is a valid file handle pointing to an open file for reading. It does NOT
+// close source.
+Statement *runparser(FILE *source) {
+    yyin = source;
 
     while (!feof(yyin)) {
 		yyparse();
     };
-    std::cout << "Parsing completed." << std::endl;
-    fclose(yyin);
 
-    if (ast == NULL) {
-        std::cout << "Parsing failed." << std::endl;
-        return 2;
-    } else {
-        std::cout << "The program:\n" << ast->toString() << std::endl;;
-    }
-    return 0;
+    return ast;
 }
 
 void yyerror(const char *msg) {

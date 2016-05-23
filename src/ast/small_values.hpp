@@ -6,8 +6,8 @@
 #include <vector>
 
 #include "small_env.hpp"
-#include "small_expr.hpp"
 #include "small_lang_forwards.h"
+#include "ast/small_expr.hpp"
 
 class Value {
     public:

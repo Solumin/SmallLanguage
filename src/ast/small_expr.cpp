@@ -2,9 +2,9 @@
 #include <sstream>
 #include <vector>
 
-#include "small_expr.hpp"
-#include "small_ops.hpp"
-#include "small_visitor.hpp"
+#include "ast/small_expr.hpp"
+#include "ast/small_ops.hpp"
+#include "visitor/small_visitor.hpp"
 
 // ================
 // ***** EId ******

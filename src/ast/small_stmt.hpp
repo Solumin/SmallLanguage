@@ -3,8 +3,6 @@
 
 #include <string>
 
-/* #include "small_expr.hpp" */
-/* #include "small_visitor.hpp" */
 #include "small_lang_forwards.h"
 
 class Statement {

@@ -1,8 +1,8 @@
 #include <string>
 
-#include "small_stmt.hpp"
-#include "small_expr.hpp"
-#include "small_visitor.hpp"
+#include "ast/small_stmt.hpp"
+#include "ast/small_expr.hpp"
+#include "visitor/small_visitor.hpp"
 #include "small_lang_forwards.h"
 
 // ================
