@@ -36,6 +36,10 @@ void EId::accept(Visitor &v) {
     v.visit(this);
 }
 
+std::string EId::getID() {
+    return id;
+}
+
 // ================
 // **** EInt ******
 // ================
@@ -60,6 +64,10 @@ std::string EInt::toString() {
 
 void EInt::accept(Visitor &v) {
     v.visit(this);
+}
+
+int EInt::getValue() {
+    return value;
 }
 
 // ================
@@ -88,6 +96,10 @@ void EFloat::accept(Visitor &v) {
     v.visit(this);
 }
 
+float EFloat::getValue() {
+    return value;
+}
+
 // ================
 // **** EBool *****
 // ================
@@ -112,6 +124,10 @@ std::string EBool::toString() {
 
 void EBool::accept(Visitor &v) {
     v.visit(this);
+}
+
+bool EBool::getValue() {
+    return value;
 }
 
 // ================
@@ -139,6 +155,10 @@ std::string EChar::toString() {
 
 void EChar::accept(Visitor &v) {
     v.visit(this);
+}
+
+char EChar::getValue() {
+    return value;
 }
 
 // ================
@@ -169,6 +189,10 @@ std::string EString::toString() {
 
 void EString::accept(Visitor &v) {
     v.visit(this);
+}
+
+std::string EString::getValue() {
+    return value;
 }
 
 // ================
@@ -214,6 +238,10 @@ void EList::accept(Visitor &v) {
     v.visit(this);
 }
 
+std::vector<Expr*> EList::getValue() {
+    return value;
+}
+
 // ================
 // **** ETuple ****
 // ================
@@ -254,6 +282,10 @@ void ETuple::accept(Visitor &v) {
     v.visit(this);
 }
 
+std::vector<Expr*> ETuple::getValue() {
+    return value;
+}
+
 // ================
 // ***** EOp2 *****
 // ================
@@ -287,6 +319,18 @@ void EOp2::accept(Visitor &v) {
     v.visit(this);
 }
 
+Op2 EOp2::getOp() {
+    return op;
+}
+
+Expr *EOp2::getLeft() {
+    return left;
+}
+
+Expr *EOp2::getRight() {
+    return right;
+}
+
 // ================
 // ***** EOp1 *****
 // ================
@@ -315,6 +359,14 @@ std::string EOp1::toString() {
 
 void EOp1::accept(Visitor &v) {
     v.visit(this);
+}
+
+Op1 EOp1::getOp() {
+    return op;
+}
+
+Expr *EOp1::getExpr() {
+    return e;
 }
 
 // ================
@@ -356,6 +408,14 @@ void ELambda::accept(Visitor &v) {
     v.visit(this);
 }
 
+std::vector<std::string> ELambda::getParams() {
+    return params;
+}
+
+Statement *ELambda::getBody() {
+    return body;
+}
+
 // ================
 // ***** EApp *****
 // ================
@@ -395,6 +455,14 @@ void EApp::accept(Visitor &v) {
     v.visit(this);
 }
 
+Expr *EApp::getFunc() {
+    return func;
+}
+
+std::vector<Expr*> EApp::getArgs() {
+    return args;
+}
+
 // ================
 // ***** EIf ******
 // ================
@@ -429,4 +497,16 @@ std::string EIf::toString() {
 
 void EIf::accept(Visitor &v) {
     v.visit(this);
+}
+
+Expr *EIf::getCond() {
+    return cond;
+}
+
+Expr *EIf::getTrueBody() {
+    return true_body;
+}
+
+Expr *EIf::getFalseBody() {
+    return false_body;
 }

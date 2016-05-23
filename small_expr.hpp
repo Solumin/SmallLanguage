@@ -36,6 +36,8 @@ class EId : public Expr {
     virtual std::string toString();
 
     virtual void accept(Visitor&);
+
+    std::string getID();
 };
 
 class EInt : public Expr {
@@ -53,6 +55,8 @@ class EInt : public Expr {
     virtual std::string toString();
 
     virtual void accept(Visitor&);
+
+    int getValue();
 };
 
 class EFloat : public Expr {
@@ -70,6 +74,8 @@ class EFloat : public Expr {
     virtual std::string toString();
 
     virtual void accept(Visitor&);
+
+    float getValue();
 };
 
 class EBool : public Expr {
@@ -87,6 +93,8 @@ class EBool : public Expr {
     virtual std::string toString();
 
     virtual void accept(Visitor&);
+
+    bool getValue();
 };
 
 class EChar : public Expr {
@@ -104,6 +112,8 @@ class EChar : public Expr {
     virtual std::string toString();
 
     virtual void accept(Visitor&);
+
+    char getValue();
 };
 
 class EString : public Expr {
@@ -123,6 +133,8 @@ class EString : public Expr {
     virtual std::string toString();
 
     virtual void accept(Visitor&);
+
+    std::string getValue();
 };
 
 class EList : public Expr {
@@ -144,6 +156,8 @@ class EList : public Expr {
     virtual std::string toString();
 
     virtual void accept(Visitor&);
+
+    std::vector<Expr*> getValue();
 };
 
 class ETuple : public Expr {
@@ -164,6 +178,8 @@ class ETuple : public Expr {
     virtual std::string toString();
 
     virtual void accept(Visitor&);
+
+    std::vector<Expr*> getValue();
 };
 
 class EOp2 : public Expr {
@@ -182,6 +198,12 @@ class EOp2 : public Expr {
     virtual std::string toString();
 
     virtual void accept(Visitor&);
+
+    Op2 getOp();
+
+    Expr *getLeft();
+
+    Expr *getRight();
 };
 
 class EOp1 : public Expr {
@@ -200,6 +222,10 @@ class EOp1 : public Expr {
     virtual std::string toString();
 
     virtual void accept(Visitor&);
+
+    Op1 getOp();
+
+    Expr *getExpr();
 };
 
 class ELambda : public Expr {
@@ -219,13 +245,9 @@ class ELambda : public Expr {
 
     virtual void accept(Visitor&);
 
-    std::vector<std::string> getParams() {
-        return params;
-    }
+    std::vector<std::string> getParams();
 
-    Statement *getBody() {
-        return body;
-    }
+    Statement *getBody();
 };
 
 class EApp : public Expr {
@@ -244,6 +266,10 @@ class EApp : public Expr {
     virtual std::string toString();
 
     virtual void accept(Visitor&);
+
+    Expr *getFunc();
+
+    std::vector<Expr*> getArgs();
 };
 
 class EIf : public Expr {
@@ -263,6 +289,12 @@ class EIf : public Expr {
     virtual std::string toString();
 
     virtual void accept(Visitor&);
+
+    Expr *getCond();
+
+    Expr *getTrueBody();
+
+    Expr *getFalseBody();
 };
 
 #endif

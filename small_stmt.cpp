@@ -36,6 +36,14 @@ void Seq::accept(Visitor &v) {
     v.visit(this);
 }
 
+Statement *Seq::getFirst() {
+    return s1;
+}
+
+Statement *Seq::getSecond() {
+    return s2;
+}
+
 // ================
 // *** Assign *****
 // ================
@@ -66,6 +74,14 @@ void Assign::accept(Visitor &v) {
     v.visit(this);
 }
 
+std::string Assign::getID() {
+    return id;
+}
+
+Expr *Assign::getRHS() {
+    return e;
+}
+
 // ================
 // *** Return *****
 // ================
@@ -92,4 +108,8 @@ std::string Return::toString() {
 
 void Return::accept(Visitor &v) {
     v.visit(this);
+}
+
+Expr *Return::getRHS() {
+    return e;
 }

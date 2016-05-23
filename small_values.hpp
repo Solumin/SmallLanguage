@@ -5,6 +5,8 @@
 #include <sstream>
 #include <vector>
 
+#include "small_env.hpp"
+#include "small_expr.hpp"
 #include "small_lang_forwards.h"
 
 class Value {
@@ -151,7 +153,7 @@ class VString : public Value {
         return value;
     }
 
-    string getValue() {
+    std::string getValue() {
         return value;
     }
 };
@@ -245,19 +247,18 @@ class VClos : public Value {
     Env env;
     public:
     // TODO: Is this the correct way to copy the env?
-    VClos (Expr *l, Env e) {
-        lambda = l->clone();
+    VClos (ELambda *l, Env e) {
+        lambda = dynamic_cast<ELambda*>(l->clone());
         env = e;
     }
 
     VClos (const VClos &other) {
-        lambda = other.lambda->clone();
+        lambda = dynamic_cast<ELambda*>(other.lambda->clone());
         env = other.env;
     }
 
     virtual ~VClos() {
         delete lambda;
-        delete env;
     }
 
     virtual Value *clone() {

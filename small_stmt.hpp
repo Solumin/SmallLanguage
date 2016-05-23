@@ -32,6 +32,10 @@ class Seq : public Statement {
     virtual std::string toString();
 
     virtual void accept(Visitor&);
+
+    Statement *getFirst();
+
+    Statement *getSecond();
 };
 
 class Assign : public Statement {
@@ -49,6 +53,10 @@ class Assign : public Statement {
     virtual std::string toString();
 
     virtual void accept(Visitor&);
+
+    std::string getID();
+
+    Expr *getRHS();
 };
 
 class Return : public Statement {
@@ -65,6 +73,8 @@ class Return : public Statement {
     virtual std::string toString();
 
     virtual void accept(Visitor&);
+
+    Expr *getRHS();
 };
 
 #endif
