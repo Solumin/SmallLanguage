@@ -1,4 +1,5 @@
 #include <string>
+#include <cmath>
 
 #include "evaluator/small_eval_visitor.hpp"
 
@@ -46,7 +47,184 @@ void EvalVisitor::visit(ETuple *e) {
 }
 
 void EvalVisitor::visit(EOp2 *e) {
+    // Get op, left hand side and right hand side
+    Op2 op = e->getOp();
+    e->getLeft()->accept(*this);
+    Value *lhs = tmp_value;
+    e->getRight()->accept(*this);
+    Value *rhs = tmp_value;
 
+    if (op <= Op2::Mod) { // arithmetic op
+        tmp_value = eval_arith(op, lhs, rhs);
+    } else if (op <= Op2::LOr) { // boolean op
+        tmp_value = new VBool(eval_bool(op, lhs, rhs));
+    } else if (op <= Op2::Gte) { // comparative op
+        tmp_value = new VBool(eval_comp(op, lhs, rhs));
+    } else if (op == Op2::Eq) { // special case
+        tmp_value = new VBool(eval_eq(lhs, rhs));
+    } else {
+        throw "EOp2: Unknown op";
+    }
+}
+
+// Integers are automatically converted to floats, never vice versa
+Value *EvalVisitor::eval_arith(Op2 op, Value *lhs, Value *rhs) {
+    // If we have two ints, proceed with int-int ops (first if block)
+    // If at least one of the args is a float (conversion to VInt failed) then
+    // make sure we have two floats.
+    VInt *li = dynamic_cast<VInt*>(lhs);
+    VInt *ri = dynamic_cast<VInt*>(rhs);
+    VFloat *lf = dynamic_cast<VFloat*>(lhs);
+    VFloat *rf = dynamic_cast<VFloat*>(rhs);
+    if (li && !ri) // li needs to be converted to float
+        lf = new VFloat(li->getValue());
+    if (!li && ri) // ri needs to be converted to float
+        rf = new VFloat(ri->getValue());
+    // It's possible that li or ri isn't a VInt OR a VFloat. That's handled in
+    // the else.
+
+    if (li && ri) { // two integers
+        switch (op) {
+            case Op2::Add: return new VInt(li->getValue() + ri->getValue());
+            case Op2::Sub: return new VInt(li->getValue() - ri->getValue());
+            case Op2::Mul: return new VInt(li->getValue() * ri->getValue());
+            case Op2::Div: return new VInt(li->getValue() / ri->getValue());
+            case Op2::Mod: return new VInt(li->getValue() % ri->getValue());
+        }
+    } else if (lf && rf) { // two floats
+        switch (op) {
+            case Op2::Add: return new VFloat(lf->getValue() + rf->getValue());
+            case Op2::Sub: return new VFloat(lf->getValue() - rf->getValue());
+            case Op2::Mul: return new VFloat(lf->getValue() * rf->getValue());
+            case Op2::Div: return new VFloat(lf->getValue() / rf->getValue());
+            case Op2::Mod: return new VFloat(fmod(lf->getValue(), rf->getValue()));
+        }
+    } else {
+        throw ("Op2: Expected numeric LHS and RHS for arithmetic op `" + Op2Strings[(int)op] + "'");
+    }
+}
+
+bool EvalVisitor::eval_bool(Op2 op, Value *lhs, Value *rhs) {
+    VBool *l = dynamic_cast<VBool*>(lhs);
+    VBool *r = dynamic_cast<VBool*>(rhs);
+    if (!l || !r)
+        throw ("Op2: Expected boolean LHs and RHS for boolean op `" + Op2Strings[(int)op] + "'");
+    switch (op) {
+        case Op2::LAnd: return l->getValue() && r->getValue();
+        case Op2::LOr: return l->getValue() || r->getValue();
+    }
+}
+
+// Can compare:
+// - Numeric types (float, int)
+// - Characters
+// - Strings
+// - Lists: Lexicographic (and type)
+// - Tuples: Size (and type)
+bool EvalVisitor::eval_comp(Op2 op, Value *lhs, Value *rhs) {
+    // Numeric Comparisons
+    VInt *li = dynamic_cast<VInt*>(lhs);
+    VInt *ri = dynamic_cast<VInt*>(rhs);
+    VFloat *lf = dynamic_cast<VFloat*>(lhs);
+    VFloat *rf = dynamic_cast<VFloat*>(rhs);
+    if (li && !ri) // li needs to be converted to float
+        lf = new VFloat(li->getValue());
+    if (!li && ri) // ri needs to be converted to float
+        rf = new VFloat(ri->getValue());
+    if (li && ri) {
+        switch (op) {
+            case Op2::Lt:  return li->getValue() < ri->getValue();
+            case Op2::Lte: return li->getValue() <= ri->getValue();
+            case Op2::Gt:  return li->getValue() > ri->getValue();
+            case Op2::Gte: return li->getValue() >= ri->getValue();
+        }
+    }
+    if (lf && rf) {
+        switch (op) {
+            case Op2::Lt:  return lf->getValue() < rf->getValue();
+            case Op2::Lte: return lf->getValue() <= rf->getValue();
+            case Op2::Gt:  return lf->getValue() > rf->getValue();
+            case Op2::Gte: return lf->getValue() >= rf->getValue();
+        }
+    }
+
+    // Character comparison
+    VChar *lc = dynamic_cast<VChar*>(lhs);
+    VChar *rc = dynamic_cast<VChar*>(rhs);
+    if (lc && rc) {
+        switch (op) {
+            case Op2::Lt:  return lc->getValue() < rc->getValue();
+            case Op2::Lte: return lc->getValue() <= rc->getValue();
+            case Op2::Gt:  return lc->getValue() > rc->getValue();
+            case Op2::Gte: return lc->getValue() >= rc->getValue();
+        }
+    }
+
+    // String comparison
+    VString *lstr = dynamic_cast<VString*>(lhs);
+    VString *rstr = dynamic_cast<VString*>(rhs);
+    if (lc && rc) {
+        int cmp = lstr->getValue().compare(rstr->getValue());
+        if (cmp < 0 && op == Op2::Lt)
+            return true;
+        if (cmp <= 0 && op == Op2::Lte)
+            return true;
+        if (cmp > 0 && op == Op2::Gt)
+            return true;
+        if (cmp >= 0 && op == Op2::Gte)
+            return true;
+        else
+            return false;
+    }
+
+    // TODO: Make list and tuple comparison type aware
+    // List comparison
+    VList *lls = dynamic_cast<VList*>(lhs);
+    VList *rls = dynamic_cast<VList*>(rhs);
+    if (lls && rls) {
+        std::vector<Value*>::iterator lit;
+        std::vector<Value*>::iterator rit;
+
+        for (lit = lls->getValue().begin(), rit = rls->getValue().begin();
+                lit != lls->getValue().end() && rit != rls->getValue().end();
+                lit++, rit++) {
+            if (!eval_eq(*lit, *rit)) {
+                switch (op) {
+                    case Op2::Lt:  return lls->getValue() < rls->getValue();
+                    case Op2::Lte: return lls->getValue() <= rls->getValue();
+                    case Op2::Gt:  return lls->getValue() > rls->getValue();
+                    case Op2::Gte: return lls->getValue() >= rls->getValue();
+                }
+            }
+        }
+    }
+
+    // Tuple comparison
+    VTuple *ltup = dynamic_cast<VTuple*>(lhs);
+    VTuple *rtup = dynamic_cast<VTuple*>(rhs);
+    if (ltup && rtup) {
+        if (ltup->getSize() != rtup->getSize())
+            throw "Op2: Cannot compare different-size tuples";
+        std::vector<Value*>::iterator lit;
+        std::vector<Value*>::iterator rit;
+
+        for (lit = ltup->getValue().begin(), rit = rtup->getValue().begin();
+                lit != ltup->getValue().end() && rit != rtup->getValue().end();
+                lit++, rit++) {
+            if (!eval_eq(*lit, *rit)) {
+                switch (op) {
+                    case Op2::Lt:  return ltup->getValue() < rtup->getValue();
+                    case Op2::Lte: return ltup->getValue() <= rtup->getValue();
+                    case Op2::Gt:  return ltup->getValue() > rtup->getValue();
+                    case Op2::Gte: return ltup->getValue() >= rtup->getValue();
+                }
+            }
+        }
+    }
+}
+
+bool EvalVisitor::eval_eq(Value *lhs, Value *rhs) {
+    return true;
 }
 
 void EvalVisitor::visit(EOp1 *e) {

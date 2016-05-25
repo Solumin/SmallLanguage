@@ -37,5 +37,11 @@ class EvalVisitor : public Visitor {
         // Functions for handling evaluator
         Value *getResult();
         void reset();
+    private:
+        // Helper functions
+        Value *eval_arith(Op2 op, Value *lhs, Value *rhs);
+        bool eval_bool(Op2 op, Value *lhs, Value *rhs);
+        bool eval_comp(Op2 op, Value *lhs, Value *rhs);
+        bool eval_eq(Value *lhs, Value *rhs);
 };
 #endif

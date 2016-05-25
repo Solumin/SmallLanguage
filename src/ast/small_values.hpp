@@ -240,6 +240,10 @@ class VTuple : public Value {
     std::vector<Value*> getValue() {
         return value;
     }
+
+    int getSize() {
+        return size;
+    }
 };
 
 class VClos : public Value {

@@ -180,6 +180,8 @@ class ETuple : public Expr {
     virtual void accept(Visitor&);
 
     std::vector<Expr*> getValue();
+
+    int getSize();
 };
 
 class EOp2 : public Expr {

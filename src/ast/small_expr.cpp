@@ -286,6 +286,10 @@ std::vector<Expr*> ETuple::getValue() {
     return value;
 }
 
+int ETuple::getSize() {
+    return size;
+}
+
 // ================
 // ***** EOp2 *****
 // ================
