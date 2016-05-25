@@ -6,7 +6,7 @@
 #include <vector>
 
 #include "small_env.hpp"
-#include "small_lang_forwards.h"
+#include "small_lang_forwards.hpp"
 #include "ast/small_expr.hpp"
 
 class Value {

@@ -4,7 +4,7 @@
 #include <string>
 #include <map>
 
-#include "small_lang_forwards.h"
+#include "small_lang_forwards.hpp"
 
 typedef std::string Id_t;
 typedef std::map<Id_t, Value*> Env;

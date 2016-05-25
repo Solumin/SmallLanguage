@@ -3,7 +3,6 @@
 #include "ast/small_stmt.hpp"
 #include "ast/small_expr.hpp"
 #include "visitor/small_visitor.hpp"
-#include "small_lang_forwards.h"
 
 // ================
 // ***** Seq ******

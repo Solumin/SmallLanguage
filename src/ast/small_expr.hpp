@@ -6,7 +6,7 @@
 
 #include "ast/small_ops.hpp"
 
-#include "small_lang_forwards.h"
+#include "small_lang_forwards.hpp"
 
 class Expr {
     public:

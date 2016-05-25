@@ -4,8 +4,6 @@
 #include "ast/small_expr.hpp"
 #include "ast/small_stmt.hpp"
 
-#include "small_lang_forwards.h"
-
 class Visitor {
     public:
         // Visitor functions for Expressions

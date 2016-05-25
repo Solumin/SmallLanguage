@@ -3,7 +3,7 @@
 
 #include <string>
 
-#include "small_lang_forwards.h"
+#include "small_lang_forwards.hpp"
 
 class Statement {
     public:
