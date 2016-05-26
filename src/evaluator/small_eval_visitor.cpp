@@ -1,3 +1,4 @@
+#include <cstdio>
 #include <string>
 #include <cmath>
 
@@ -163,7 +164,7 @@ bool EvalVisitor::eval_comp(Op2 op, Value *lhs, Value *rhs) {
     // String comparison
     VString *lstr = dynamic_cast<VString*>(lhs);
     VString *rstr = dynamic_cast<VString*>(rhs);
-    if (lc && rc) {
+    if (lstr && rstr) {
         int cmp = lstr->getValue().compare(rstr->getValue());
         if (cmp < 0 && op == Op2::Lt)
             return true;
@@ -182,6 +183,102 @@ bool EvalVisitor::eval_comp(Op2 op, Value *lhs, Value *rhs) {
     VList *lls = dynamic_cast<VList*>(lhs);
     VList *rls = dynamic_cast<VList*>(rhs);
     if (lls && rls) {
+        // Is either list empty?
+        // Two empty lists are ==
+        if (lls->getValue().size() == 0 && rls->getValue().size() == 0) {
+            return (op == Op2::Lte || op == Op2::Gte);
+        }
+        // Empty list is always < and <= another list
+        if (lls->getValue().size() == 0) {
+            return (op == Op2::Lt || op == Op2::Lte);
+        }
+        // Any list is always > and >= the empty list
+        if (rls->getValue().size() == 0) {
+            return (op == Op2::Gt || op == Op2::Gte);
+        }
+
+        std::vector<Value*>::iterator lit = lls->getValue().begin();
+        std::vector<Value*>::iterator rit = rls->getValue().begin();
+
+        for (; lit != lls->getValue().end() && rit != rls->getValue().end();
+                lit++, rit++) {
+            if (*lit == NULL) {
+                printf("LIT* NULL");
+                throw "";
+            }
+            if (*rit == NULL) {
+                printf("RIT* NULL");
+                throw "";
+            }
+            if (!eval_eq(*lit, *rit)) {
+                return eval_comp(op, *lit, *rit);
+            }
+        }
+        // If we've reached this point, the two lists are equal.
+        return (op == Op2::Lte || op == Op2::Gte);
+    }
+
+    // Tuple comparison
+    VTuple *ltup = dynamic_cast<VTuple*>(lhs);
+    VTuple *rtup = dynamic_cast<VTuple*>(rhs);
+    if (ltup && rtup) {
+        if (ltup->getSize() != rtup->getSize())
+            throw "Op2: Cannot compare different-size tuples";
+        std::vector<Value*>::iterator lit = ltup->getValue().begin();
+        std::vector<Value*>::iterator rit = rtup->getValue().begin();
+
+        for (; lit != ltup->getValue().end() && rit != rtup->getValue().end();
+               lit++, rit++) {
+            if (!eval_eq(*lit, *rit)) {
+                return eval_comp(op, *lit, *rit);
+            }
+        }
+        // If we've reached this point, the two tuples are equal.
+        return (op == Op2::Lte || op == Op2::Gte);
+    }
+
+    throw "Could not eval";
+}
+
+bool EvalVisitor::eval_eq(Value *lhs, Value *rhs) {
+    // Numeric Comparisons
+    VInt *li = dynamic_cast<VInt*>(lhs);
+    VInt *ri = dynamic_cast<VInt*>(rhs);
+    VFloat *lf = dynamic_cast<VFloat*>(lhs);
+    VFloat *rf = dynamic_cast<VFloat*>(rhs);
+    if (li && !ri) // li needs to be converted to float
+        lf = new VFloat(li->getValue());
+    if (!li && ri) // ri needs to be converted to float
+        rf = new VFloat(ri->getValue());
+    if (li && ri) {
+        return li->getValue() == ri->getValue();
+    }
+
+    if (lf && rf) {
+        return lf->getValue() == rf->getValue();
+    }
+
+    // Character comparison
+    VChar *lc = dynamic_cast<VChar*>(lhs);
+    VChar *rc = dynamic_cast<VChar*>(rhs);
+    if (lc && rc) {
+        return lc->getValue() == rc->getValue();
+    }
+
+    // String comparison
+    VString *lstr = dynamic_cast<VString*>(lhs);
+    VString *rstr = dynamic_cast<VString*>(rhs);
+    if (lstr && rstr) {
+        return lstr->getValue().compare(rstr->getValue()) == 0;
+    }
+
+    // TODO: Make list and tuple comparison type aware
+    // List comparison
+    VList *lls = dynamic_cast<VList*>(lhs);
+    VList *rls = dynamic_cast<VList*>(rhs);
+    if (lls && rls) {
+        if (lls->getValue().size() != rls->getValue().size())
+            return false;
         std::vector<Value*>::iterator lit;
         std::vector<Value*>::iterator rit;
 
@@ -189,14 +286,10 @@ bool EvalVisitor::eval_comp(Op2 op, Value *lhs, Value *rhs) {
                 lit != lls->getValue().end() && rit != rls->getValue().end();
                 lit++, rit++) {
             if (!eval_eq(*lit, *rit)) {
-                switch (op) {
-                    case Op2::Lt:  return lls->getValue() < rls->getValue();
-                    case Op2::Lte: return lls->getValue() <= rls->getValue();
-                    case Op2::Gt:  return lls->getValue() > rls->getValue();
-                    case Op2::Gte: return lls->getValue() >= rls->getValue();
-                }
+                return false;
             }
         }
+        return true;
     }
 
     // Tuple comparison
@@ -212,19 +305,11 @@ bool EvalVisitor::eval_comp(Op2 op, Value *lhs, Value *rhs) {
                 lit != ltup->getValue().end() && rit != rtup->getValue().end();
                 lit++, rit++) {
             if (!eval_eq(*lit, *rit)) {
-                switch (op) {
-                    case Op2::Lt:  return ltup->getValue() < rtup->getValue();
-                    case Op2::Lte: return ltup->getValue() <= rtup->getValue();
-                    case Op2::Gt:  return ltup->getValue() > rtup->getValue();
-                    case Op2::Gte: return ltup->getValue() >= rtup->getValue();
-                }
+                return false;
             }
         }
+        return true;
     }
-}
-
-bool EvalVisitor::eval_eq(Value *lhs, Value *rhs) {
-    return true;
 }
 
 void EvalVisitor::visit(EOp1 *e) {
