@@ -1,6 +1,13 @@
 # build dir
 build/
 
+# bison files
+*.tab.c*
+*.tab.h*
+
+# flex files (MY OWN NAMING CONVENTION)
+*.flex.c*
+
 # Compiled Object files
 *.slo
 *.lo

@@ -2,80 +2,87 @@ SRCDIR=src
 BUILDDIR=build
 
 # FLEX source files
-LEXDIR=$(SRCDIR)/flex
-LEXIN=$(LEXDIR)/small_lang.lex
-LEXOUT=$(BUILDDIR)/small_lex.yy.c
-FLEXOPTS=--outfile=$(LEXOUT)
+LEXPREFIX=flex/small_lang
+LEXIN=$(SRCDIR)/$(LEXPREFIX).lex
+LEXSRC=$(SRCDIR)/$(LEXPREFIX).flex.cpp
+LEXOBJ=$(patsubst $(SRCDIR)/%.cpp,$(BUILDDIR)/%.o,$(LEXSRC))
+FLEXOPTS=--outfile=$(LEXSRC)
 
 # BISON source files
-BISONDIR=$(SRCDIR)/bison
-# Force bison to output to the build dir by prefixing the files with
-# "build/small_lang", will out "build/small_lang.tab.c" etc.
-BISONPREFIX=small_lang
-BISONOUTPRE=$(BUILDDIR)/$(BISONPREFIX)
-BISONIN=$(BISONDIR)/$(BISONPREFIX).y
-BTABH=$(BISONOUTPRE).tab.h
-BTABC=$(BISONOUTPRE).tab.c
-BALLOUT=$(BTABH) $(BTABC)
-BISONOPTS=--file-prefix=$(BISONOUTPRE) -d
+BISONPREFIX=bison/small_lang
+BISONIN=$(SRCDIR)/$(BISONPREFIX).y
+BISONSRC=$(SRCDIR)/$(BISONPREFIX).tab.cpp
+BISONH=$(BISONSRC:.cpp=.hpp)
+BISONOBJ=$(patsubst $(SRCDIR)/%.cpp,$(BUILDDIR)/%.o,$(BISONSRC))
+BISONOPTS=--output=$(BISONSRC) --defines=$(BISONH)
 
-# AST source files
-ASTC=$(SRCDIR)/ast/*.cpp
-ASTH=$(SRCDIR)/ast/*.hpp
+# All the known source files -- used for general rules like making the .d files
+ALLSRCS=$(shell find $(SRCDIR) -type f -name "*.cpp")
+ALLOBJS=$(patsubst $(SRCDIR)/%.cpp,$(BUILDDIR)/%.o,$(ALLSRCS))
+ALLPRES=$(ALLOBJS:.o=.d)
 
-# Visitor header
-VISITH=$(SRCDIR)/visitor/*.hpp
+# Component-specific source files: AST, Evaluator and Parser
+ASTSRCS=$(wildcard $(SRCDIR)/ast/*.cpp)
+ASTH=$(wildcard $(SRCDIR)/ast/*.h)
+ASTOBJS=$(patsubst $(SRCDIR)/%.cpp,$(BUILDDIR)/%.o,$(ASTSRCS))
 
-# Misc headers
-MISC=$(SRCDIR)/*.h $(SRCDIR)/*.hpp
+EVALSRCS=$(wildcard $(SRCDIR)/evaluator/*.cpp)
+EVALOBJS=$(patsubst $(SRCDIR)/%.cpp,$(BUILDDIR)/%.o,$(EVALSRCS))
 
-# Evaluator source
-EVALC=$(SRCDIR)/evaluator/*.cpp
-EVALH=$(SRCDIR)/evaluator/*.hpp
+PARSESRCS=$(wildcard $(SRCDIR)/parser/*.cpp)
+PARSEOBJS=$(patsubst $(SRCDIR)/%.cpp,$(BUILDDIR)/%.o,$(PARSESRCS))
+
 EVALEXE=small_eval.exe
-
-# Parser source
-PARSEC=$(SRCDIR)/parser/*.cpp
-PARSEH=$(SRCDIR)/parser/*.hpp
 PARSEEXE=small_parser.exe
-
-# Other options
 GPPOPTS=-g -I src
 
-.PHONY: parser lexer bison clean clean-all
+.PHONY: all evaluator parser bison flex clean clean-all
 
-# High-level targets for making the parser, the lexer and the bison files
-
-all: parser evaluator
+all: evaluator parser
 
 evaluator: $(EVALEXE)
 
 parser: $(PARSEEXE)
 
-flex: $(LEXOUT)
+bison: $(BISONSRC)
 
-bison: $(BALLOUT)
+flex: $(LEXSRC)
 
-# "Low-level" targets for making the executable and other files
+$(EVALEXE): $(EVALOBJS) $(ASTOBJS) $(BISONSRC) $(LEXSRC)
+	g++ $(GPPOPTS) -o $(EVALEXE) $^
 
-$(EVALEXE): flex bison $(EVALC) $(ASTC)
-	g++ $(GPPOPTS) -o $(EVALEXE) $(BTABC) $(LEXOUT) $(ASTC) $(EVALC)
+$(PARSEEXE): $(PARSEOBJS) $(ASTOBJS) $(BISONSRC) $(LEXSRC)
+	g++ $(GPPOPTS) -o $(PARSEEXE) $^
 
-$(PARSEEXE): $(LEXOUT) $(BALLOUT) $(PARSEC) $(ASTC)
-	g++ $(GPPOPTS) -o $(PARSEEXE) $(BTABC) $(LEXOUT) $(ASTC) $(PARSEC)
+$(ALLOBJS): $(BUILDDIR)/%.o : $(SRCDIR)/%.cpp | $(BUILDDIR)
+	g++ $(GPPOPTS) -c -o $@ $<
 
-$(BALLOUT): $(BISONIN) $(BUILDDIR)
+# The output rule in the .d file will list both the .d and the .o files as
+# targets. This ensures BOTH will be updated if either prereq changes.
+$(ALLPRES): $(BUILDDIR)/%.d : $(SRCDIR)/%.cpp | $(BUILDDIR)
+	g++ -MM -MF $@ -MT "$@ $(patsubst %.d,%.o,$@)" $(GPPOPTS) $<
+
+$(BISONSRC) $(BISONH): $(BISONIN) $(ASTSRCS) $(ASTH) $(BUILDDIR)
 	bison $(BISONOPTS) $(BISONIN)
+	g++ -MM -MF $(BISONOBJ) -MT $(BISONOBJ:.o=.d) $(GPPOPTS) $(BISONSRC)
 
-$(LEXOUT): $(LEXIN) $(BTABH) $(BUILDDIR)
+$(LEXSRC): $(LEXIN) $(BISONH) $(BUILDDIR)
 	flex $(FLEXOPTS) $(LEXIN)
+	g++ -MM -MF $(LEXOBJ) -MT $(LEXOBJ:.o=.d) $(GPPOPTS) $(LEXSRC)
 
+# This is inlucded as an order-only prereq on the OBJS and PRES rules in order
+# to make sure the build directory exists first!
 $(BUILDDIR):
-	mkdir -p $(BUILDDIR)
+	mkdir -p $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(shell find $(SRCDIR) -type d))
+
+# Include all the .d files (which indicate the prerequisites of each file)
+-include $(ALLPRES)
 
 clean:
-	rm -f $(BUILDDIR)/*
+	rm -rf $(BUILDDIR)/*
 
 clean-all: clean
 	rm -f $(PARSEEXE) $(EVALEXE)
+	rm -f $(BISONSRC) $(BISONH)
+	rm -f $(LEXSRC)
 	rmdir $(BUILDDIR)

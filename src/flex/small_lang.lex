@@ -1,6 +1,6 @@
 %option noyywrap
 %{
-#include "small_lang.tab.h"
+#include "bison/small_lang.tab.hpp"
 
 #define YY_DECL extern "C" int yylex()
 void yyerror(const char *msg);
