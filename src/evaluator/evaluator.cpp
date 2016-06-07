@@ -2,7 +2,7 @@
 
 #include "ast/small_stmt.hpp"
 #include "ast/small_expr.hpp"
-#include "ast/small_values.hpp"
+#include "evaluator/small_values.hpp"
 #include "evaluator/small_eval_visitor.hpp"
 
 extern "C" Statement *runparser(FILE *source);

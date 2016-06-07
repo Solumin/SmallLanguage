@@ -5,7 +5,7 @@
 
 #include "ast/small_expr.hpp"
 #include "ast/small_stmt.hpp"
-#include "ast/small_values.hpp"
+#include "evaluator/small_values.hpp"
 #include "small_env.hpp"
 
 class EvalVisitor : public Visitor {
