@@ -100,7 +100,35 @@ bool EvalVisitor::eval_comp(Op2 op, Value *lhs, Value *rhs) {
 }
 
 void EvalVisitor::visit(EOp1 *e) {
+    e->getExpr()->accept(*this);
+    Value *v = tmp_value;
+    switch(e->getOp()) {
+        case Op1::Neg: tmp_value = eval_op1_neg(v); break;
+        case Op1::LNot: tmp_value = eval_op1_not(v); break;
+        default: throw "Unknown unary op";
+    }
+}
 
+// Can negate ints and floats
+Value *EvalVisitor::eval_op1_neg(Value *v) {
+    VInt *vi = dynamic_cast<VInt*>(v);
+    if (vi)
+        return new VInt(-(vi->getValue()));
+
+    VFloat *vf = dynamic_cast<VFloat*>(v);
+    if (vf)
+        return new VFloat(-(vf->getValue()));
+
+    throw "Expected an Int or Float";
+}
+
+// Van ONLY negate Bool
+Value *EvalVisitor::eval_op1_not(Value *v) {
+    VBool *vb = dynamic_cast<VBool*>(v);
+    if (vb)
+        return new VBool(!vb->getValue());
+
+    throw "Expected a Bool";
 }
 
 void EvalVisitor::visit(ELambda *e) {

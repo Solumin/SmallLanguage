@@ -42,6 +42,7 @@ class EvalVisitor : public Visitor {
         Value *eval_arith(Op2 op, Value *lhs, Value *rhs);
         bool eval_bool(Op2 op, Value *lhs, Value *rhs);
         bool eval_comp(Op2 op, Value *lhs, Value *rhs);
-        bool eval_eq(Value *lhs, Value *rhs);
+        Value *eval_op1_neg(Value *v);
+        Value *eval_op1_not(Value *v);
 };
 #endif
