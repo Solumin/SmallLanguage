@@ -33,11 +33,11 @@ class Value {
         }
 
         virtual bool gt(const Value *rhs) const {
-            return rhs->gt(this);
+            return rhs->lt(this);
         }
 
         virtual bool gte(const Value *rhs) const {
-            return !(lt(rhs));
+            return !(this->lt(rhs));
         }
 };
 

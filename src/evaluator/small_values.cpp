@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include <cmath>
 
 #include "evaluator/small_values.hpp"
@@ -409,16 +411,12 @@ bool VList::eq(const Value *rhs) const {
     if (getValue().size() == 0 && rls->getValue().size() == 0)
         return true;
 
-    // Compare by iterating over elements
-    std::vector<Value*>::const_iterator lit;
-    std::vector<Value*>::const_iterator rit;
+    std::vector<Value*> rvec = rls->getValue();
 
-    for (lit = getValue().begin(), rit = rls->getValue().begin();
-            lit != getValue().end() && rit != rls->getValue().end();
-            lit++, rit++) {
+    // Equality is over the whole list, of course
+    for (auto lit = value.cbegin(), rit = rvec.cbegin(); lit != value.cend() && rit != value.cend(); ++lit, ++rit)
         if (!(*lit)->eq(*rit))
             return false;
-    }
     return true;
 }
 
@@ -429,20 +427,18 @@ bool VList::lt(const Value *rhs) const {
         throw new CompArgMismatch();
 
     // An empty list is always < a non-empty list
-    if (getValue().size() == 0)
+    if (value.size() == 0)
         return rls->getValue().size() > 0;
 
-    // Compare by iterating over elements
-    std::vector<Value*>::const_iterator lit;
-    std::vector<Value*>::const_iterator rit;
+    std::vector<Value*> rvec = rls->getValue();
 
-    for (lit = getValue().begin(), rit = rls->getValue().begin();
-         lit != getValue().end() && rit != rls->getValue().end();
-         lit++, rit++) {
-        if (!(*lit)->lt(*rit))
-            return false;
+    // Compare by iterating over elements
+    for (auto lit = value.cbegin(), rit = rvec.cbegin(); lit != value.cend() && rit != value.cend(); ++lit, ++rit) {
+        if ((*lit)->eq(*rit))
+            continue;
+        return (*lit)->lt(*rit);
     }
-    return true;
+    return false;
 }
 
 //=========
@@ -493,15 +489,11 @@ bool VTuple::eq(const Value *rhs) const {
         throw new TupleSizeMismatch();
 
     // Compare by iterating over elements
-    std::vector<Value*>::const_iterator lit;
-    std::vector<Value*>::const_iterator rit;
+    std::vector<Value*> rvec = rts->getValue();
 
-    for (lit = getValue().begin(), rit = rts->getValue().begin();
-            lit != getValue().end() && rit != rts->getValue().end();
-            lit++, rit++) {
+    for (auto lit = value.cbegin(), rit = rvec.cbegin(); lit != value.cend() && rit != value.cend(); ++lit, ++rit)
         if (!(*lit)->eq(*rit))
             return false;
-    }
     return true;
 }
 
@@ -515,17 +507,15 @@ bool VTuple::lt(const Value *rhs) const {
     if (getSize() != rts->getSize())
         throw new TupleSizeMismatch();
 
-    // Compare by iterating over elements
-    std::vector<Value*>::const_iterator lit;
-    std::vector<Value*>::const_iterator rit;
+    std::vector<Value*> rvec = rts->getValue();
 
-    for (lit = getValue().begin(), rit = rts->getValue().begin();
-            lit != getValue().end() && rit != rts->getValue().end();
-            lit++, rit++) {
-        if (!(*lit)->lt(*rit))
-            return false;
+    // Compare by iterating over elements
+    for (auto lit = value.cbegin(), rit = rvec.cbegin(); lit != value.cend() && rit != value.cend(); ++lit, ++rit) {
+        if ((*lit)->eq(*rit))
+            continue;
+        return (*lit)->lt(*rit);
     }
-    return true;
+    return false;
 }
 
 std::vector<Value*> VTuple::getValue() const {
