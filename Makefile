@@ -34,7 +34,8 @@ PARSEOBJS=$(patsubst $(SRCDIR)/%.cpp,$(BUILDDIR)/%.o,$(PARSESRCS))
 
 EVALEXE=small_eval.exe
 PARSEEXE=small_parser.exe
-GPPOPTS=-g -I src
+# The -std flag is "gnu++14" by default. Making it an explicit dependency.
+GPPOPTS=-g -I src -std=gnu++14
 
 .PHONY: all evaluator parser bison flex clean clean-all
 

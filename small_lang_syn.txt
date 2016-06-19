@@ -1,16 +1,10 @@
 Current task: Evaluating EOp1 and EOp2.
-- Arithmetic ops are defined for floats and ints ONLY
-- Boolean ops are defined for bools ONLY
-- Comparative ops are defined for floats and ints ONLY
-- Equality is an exception: It's defined for Floats and Ints _and_ Bools, but
-  separately -- can't compare "true == 1" for e.g.
 
 TODO:
 - Evaluate
+    - Test cases and proper test runner
 - Case, Patterns
 - Semicolons unnecessary (a la Go), newlines no longer syntactically significant
-- Update to C++ 11
-- Separate AST and interpreter. Basically, prepare for compilation.
 
 OK so let's talk about syntax.
 
