@@ -71,7 +71,7 @@ $(LEXSRC): $(LEXIN) $(BISONH) $(BUILDDIR)
 	flex $(FLEXOPTS) $(LEXIN)
 	g++ -MM -MF $(LEXOBJ) -MT $(LEXOBJ:.o=.d) $(GPPOPTS) $(LEXSRC)
 
-# This is inlucded as an order-only prereq on the OBJS and PRES rules in order
+# This is inluded as an order-only prereq on the OBJS and PRES rules in order
 # to make sure the build directory exists first!
 $(BUILDDIR):
 	mkdir -p $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(shell find $(SRCDIR) -type d))
@@ -81,9 +81,9 @@ $(BUILDDIR):
 
 clean:
 	rm -rf $(BUILDDIR)/*
+	rmdir $(BUILDDIR)
 
 clean-all: clean
 	rm -f $(PARSEEXE) $(EVALEXE)
 	rm -f $(BISONSRC) $(BISONH)
 	rm -f $(LEXSRC)
-	rmdir $(BUILDDIR)
